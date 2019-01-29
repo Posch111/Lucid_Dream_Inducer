@@ -1,0 +1,48 @@
+<resources>
+    <string name="app_name">Lucidio</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_main2">Lucidio</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="ble_scan">Scan for BLE</string>
+    <string name="disconnect_butt">Disconnect</string>
+    <string name="motor_on_butt">Motor On</string>
+    <string name="motor_off_butt">Motor Off</string>
+    <string name="stop_rem_butt">Stop REM</string>
+    <string name="set_led_butt">Set LEDs</string>
+    <string name="start_rem_butt">Start REM</string>
+    <string name="mon_butt">Mon</string>
+    <string name="tues_butt">Tues</string>
+    <string name="wed_butt">Wed</string>
+    <string name="thurs_butt">Thurs</string>
+    <string name="fri_butt">Fri</string>
+    <string name="sat_butt">Sat</string>
+    <string name="sun_butt">Sun</string>
+
+    <string name="no_data">No data</string>
+    <string name="no_name">No Name</string>
+    <string name="ble_not_supported">BLE is not supported</string>
+    <string name="label_data">Data:</string>
+    <string name="label_device_address">Device address:</string>
+    <string name="label_state">State:</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="title_devices">BLE Device Scan</string>
+    <string name="error_bluetooth_not_supported">Bluetooth not supported.</string>
+    <string name="title">Lucidio</string>
+
+    <string name="unknown_device">Unknown device</string>
+    <string name="unknown_characteristic">Unknown characteristic</string>
+    <string name="unknown_service">Unknown service</string>
+
+    <!-- Menu items -->
+    <string name="menu_connect">Connect</string>
+    <string name="menu_disconnect">Disconnect</string>
+    <string name="menu_scan">Scan</string>
+    <string name="menu_stop">Stop</string>
+    <string name="title_activity_result_view">resultView</string>
+    <string name="title_activity_sleep">SleepActivity</string>
+
+</resources>

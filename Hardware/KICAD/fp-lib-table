@@ -1,0 +1,7 @@
+(fp_lib_table
+  (lib (name KPS-1290-david)(type KiCad)(uri /Users/davidjedynak/REM_Sleep_Cycle_Monitor/Hardware/Libraries/KPS-1290)(options "")(descr "")(disabled))
+  (lib (name RN4020)(type KiCad)(uri /home/ben/workspace/git/REM_Sleep_Cycle_Monitor/Hardware/Libraries/RN4020)(options "")(descr ""))
+  (lib (name MSP430-Part-Library-for-Kicad-master)(type KiCad)(uri /home/ben/workspace/git/REM_Sleep_Cycle_Monitor/Hardware/Libraries/MSP430-Part-Library-for-Kicad-master)(options "")(descr ""))
+  (lib (name KPS-1290)(type KiCad)(uri /home/ben/workspace/git/REM_Sleep_Cycle_Monitor/Hardware/Libraries/KPS-1290)(options "")(descr ""))
+  (lib (name AMS00X)(type KiCad)(uri /home/ben/workspace/git/REM_Sleep_Cycle_Monitor/Hardware/Libraries/AMS00X)(options "")(descr ""))
+)

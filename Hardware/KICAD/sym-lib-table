@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name REM_sleep_analysis-rescue)(type Legacy)(uri ${KIPRJMOD}/REM_sleep_analysis-rescue.lib)(options "")(descr ""))
+)

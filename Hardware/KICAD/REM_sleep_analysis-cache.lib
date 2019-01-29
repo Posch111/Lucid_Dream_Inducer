@@ -1,0 +1,473 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# REM_sleep_analysis-rescue_C-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_C-REM_sleep_analysis-rescue C 0 10 N Y 1 F N
+F0 "C" 25 100 50 H V L CNN
+F1 "REM_sleep_analysis-rescue_C-REM_sleep_analysis-rescue" 25 -100 50 H V L CNN
+F2 "" 38 -150 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ C_*
+$ENDFPLIST
+DRAW
+P 2 0 1 20 -80 -30 80 -30 N
+P 2 0 1 20 -80 30 80 30 N
+X ~ 1 0 150 110 D 50 50 1 1 P
+X ~ 2 0 -150 110 U 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_Conn_01x02_Female-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_Conn_01x02_Female-REM_sleep_analysis-rescue J 0 40 Y N 1 F N
+F0 "J" 0 100 50 H V C CNN
+F1 "REM_sleep_analysis-rescue_Conn_01x02_Female-REM_sleep_analysis-rescue" 0 -200 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ Connector*:*_??x*mm*
+ Connector*:*1x??x*mm*
+ Socket?Strip?Straight?1X*
+ Socket?Strip?Angled?1X*
+$ENDFPLIST
+DRAW
+A 0 -100 20 901 -901 1 1 6 N 0 -80 0 -120
+A 0 0 20 901 -901 1 1 6 N 0 20 0 -20
+P 2 1 1 6 -50 -100 -20 -100 N
+P 2 1 1 6 -50 0 -20 0 N
+X Pin_1 1 -200 0 150 R 50 50 1 1 P
+X Pin_2 2 -200 -100 150 R 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_Conn_01x02_Male-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_Conn_01x02_Male-REM_sleep_analysis-rescue J 0 40 Y N 1 F N
+F0 "J" 0 100 50 H V C CNN
+F1 "REM_sleep_analysis-rescue_Conn_01x02_Male-REM_sleep_analysis-rescue" 0 -200 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ Connector*:*_??x*mm*
+ Connector*:*1x??x*mm*
+ Pin?Header?Straight?1X*
+ Pin?Header?Angled?1X*
+$ENDFPLIST
+DRAW
+S 34 -95 0 -105 1 1 6 F
+S 34 5 0 -5 1 1 6 F
+P 2 1 1 6 50 -100 34 -100 N
+P 2 1 1 6 50 0 34 0 N
+X Pin_1 1 200 0 150 L 50 50 1 1 P
+X Pin_2 2 200 -100 150 L 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_Conn_01x03-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_Conn_01x03-REM_sleep_analysis-rescue J 0 40 Y N 1 F N
+F0 "J" 0 200 50 H V C CNN
+F1 "REM_sleep_analysis-rescue_Conn_01x03-REM_sleep_analysis-rescue" 0 -200 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ Connector*:*_??x*mm*
+ Connector*:*1x??x*mm*
+ Pin?Header?Straight?1X*
+ Pin?Header?Angled?1X*
+ Socket?Strip?Straight?1X*
+ Socket?Strip?Angled?1X*
+$ENDFPLIST
+DRAW
+S -50 -95 0 -105 1 1 6 N
+S -50 5 0 -5 1 1 6 N
+S -50 105 0 95 1 1 6 N
+S -50 150 50 -150 1 1 10 f
+X Pin_1 1 -200 100 150 R 50 50 1 1 P
+X Pin_2 2 -200 0 150 R 50 50 1 1 P
+X Pin_3 3 -200 -100 150 R 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_Conn_01x06_Female-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_Conn_01x06_Female-REM_sleep_analysis-rescue J 0 40 Y N 1 F N
+F0 "J" 0 300 50 H V C CNN
+F1 "REM_sleep_analysis-rescue_Conn_01x06_Female-REM_sleep_analysis-rescue" 0 -400 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ Connector*:*_??x*mm*
+ Connector*:*1x??x*mm*
+ Socket?Strip?Straight?1X*
+ Socket?Strip?Angled?1X*
+$ENDFPLIST
+DRAW
+A 0 -300 20 901 -901 1 1 6 N 0 -280 0 -320
+A 0 -200 20 901 -901 1 1 6 N 0 -180 0 -220
+A 0 -100 20 901 -901 1 1 6 N 0 -80 0 -120
+A 0 0 20 901 -901 1 1 6 N 0 20 0 -20
+A 0 100 20 901 -901 1 1 6 N 0 120 0 80
+A 0 200 20 901 -901 1 1 6 N 0 220 0 180
+P 2 1 1 6 -50 -300 -20 -300 N
+P 2 1 1 6 -50 -200 -20 -200 N
+P 2 1 1 6 -50 -100 -20 -100 N
+P 2 1 1 6 -50 0 -20 0 N
+P 2 1 1 6 -50 100 -20 100 N
+P 2 1 1 6 -50 200 -20 200 N
+X Pin_1 1 -200 200 150 R 50 50 1 1 P
+X Pin_2 2 -200 100 150 R 50 50 1 1 P
+X Pin_3 3 -200 0 150 R 50 50 1 1 P
+X Pin_4 4 -200 -100 150 R 50 50 1 1 P
+X Pin_5 5 -200 -200 150 R 50 50 1 1 P
+X Pin_6 6 -200 -300 150 R 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_D-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_D-REM_sleep_analysis-rescue D 0 40 N N 1 F N
+F0 "D" 0 100 50 H V C CNN
+F1 "REM_sleep_analysis-rescue_D-REM_sleep_analysis-rescue" 0 -100 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ TO-???*
+ *SingleDiode
+ *_Diode_*
+ *SingleDiode*
+ D_*
+$ENDFPLIST
+DRAW
+P 2 0 1 8 -50 50 -50 -50 N
+P 2 0 1 0 50 0 -50 0 N
+P 4 0 1 8 50 50 50 -50 -50 0 50 50 N
+X K 1 -150 0 100 R 50 50 1 1 P
+X A 2 150 0 100 L 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_GND-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_GND-REM_sleep_analysis-rescue #PWR 0 0 Y Y 1 F P
+F0 "#PWR" 0 -250 50 H I C CNN
+F1 "REM_sleep_analysis-rescue_GND-REM_sleep_analysis-rescue" 0 -150 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+P 6 0 1 0 0 0 0 -50 50 -50 0 -100 -50 -50 0 -50 N
+X GND 1 0 0 0 D 50 50 1 1 W N
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_INA128-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_INA128-REM_sleep_analysis-rescue U 0 10 Y Y 1 F N
+F0 "U" 150 125 50 H V L CNN
+F1 "REM_sleep_analysis-rescue_INA128-REM_sleep_analysis-rescue" 150 -125 50 H V L CNN
+F2 "" 100 0 50 H I C CNN
+F3 "" 100 0 50 H I C CNN
+$FPLIST
+ DIP*W7.62mm*
+ SOIC*Pitch1.27mm*
+$ENDFPLIST
+DRAW
+P 4 0 1 10 300 0 -200 250 -200 -250 300 0 f
+X Rg 1 -300 100 100 R 50 50 1 1 P
+X - 2 -300 -200 100 R 50 50 1 1 I
+X + 3 -300 200 100 R 50 50 1 1 I
+X V- 4 0 -300 150 U 50 50 1 1 W
+X Ref 5 100 -300 200 U 50 50 1 1 I
+X ~ 6 400 0 100 L 50 50 1 1 O
+X V+ 7 0 300 150 D 50 50 1 1 W
+X Rg 8 -300 -100 100 R 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_LED-RESCUE-REM_sleep_analysis-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_LED-RESCUE-REM_sleep_analysis-REM_sleep_analysis-rescue D 0 40 Y N 1 F N
+F0 "D" 0 100 50 H V C CNN
+F1 "REM_sleep_analysis-rescue_LED-RESCUE-REM_sleep_analysis-REM_sleep_analysis-rescue" 0 -100 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ LED*
+$ENDFPLIST
+DRAW
+P 2 0 1 8 -50 -50 -50 50 N
+P 2 0 1 0 -50 0 50 0 N
+P 4 0 1 8 50 -50 50 50 -50 0 50 -50 N
+P 5 0 1 0 -120 -30 -180 -90 -150 -90 -180 -90 -180 -60 N
+P 5 0 1 0 -70 -30 -130 -90 -100 -90 -130 -90 -130 -60 N
+X K 1 -150 0 100 R 50 50 1 1 P
+X A 2 150 0 100 L 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_MCP602-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_MCP602-REM_sleep_analysis-rescue U 0 20 Y Y 2 F N
+F0 "U" 0 200 50 H V L CNN
+F1 "REM_sleep_analysis-rescue_MCP602-REM_sleep_analysis-rescue" 0 -200 50 H V L CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ SOIC*3.9x4.9mm*Pitch1.27mm*
+ DIP*W7.62mm*
+ TO*99*
+ OnSemi*Micro8*
+ TSSOP*3x3mm*Pitch0.65mm*
+ TSSOP*4.4x3mm*Pitch0.65mm*
+ MSOP*3x3mm*Pitch0.65mm*
+ SSOP*3.9x4.9mm*Pitch0.635mm*
+ LFCSP*2x2mm*Pitch0.5mm*
+ *SIP*
+ SOIC*5.3x6.2mm*Pitch1.27mm*
+$ENDFPLIST
+DRAW
+P 4 0 1 10 -200 200 200 0 -200 -200 -200 200 f
+X V- 4 -100 -300 150 U 50 50 0 1 W
+X V+ 8 -100 300 150 D 50 50 0 1 W
+X ~ 1 300 0 100 L 50 50 1 1 O
+X - 2 -300 -100 100 R 50 50 1 1 I
+X + 3 -300 100 100 R 50 50 1 1 I
+X + 5 -300 100 100 R 50 50 2 1 I
+X - 6 -300 -100 100 R 50 50 2 1 I
+X ~ 7 300 0 100 L 50 50 2 1 O
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_MSP430G2553_PW20-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_MSP430G2553_PW20-REM_sleep_analysis-rescue U 0 40 Y Y 1 F N
+F0 "U" 1450 900 60 H V C CNN
+F1 "REM_sleep_analysis-rescue_MSP430G2553_PW20-REM_sleep_analysis-rescue" -650 950 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+S -1600 800 1700 -600 0 1 0 N
+X DVCC 1 -1900 -200 300 R 50 50 1 1 I
+X P2.2/TA1.1 10 2000 500 300 L 50 50 1 1 I
+X P2.3/TA1.0 11 2000 400 300 L 50 50 1 1 I
+X P2.4/TA1.2 12 2000 300 300 L 50 50 1 1 I
+X P2.5/TA1.2 13 2000 200 300 L 50 50 1 1 I
+X P1.6/TA0.1/UCB0SOMI/UCB0SCL/A6/CA6/TDI/TCLK 14 -1900 100 300 R 50 50 1 1 I
+X P1.7/CAOUT/UCB0SIMO/UCB0SDA/A7/CA7/TDO/TDI 15 -1900 0 300 R 50 50 1 1 I
+X ~RST~/NMI/SBWTDIO 16 2000 -250 300 L 50 50 1 1 I
+X TEST/SBWTCK 17 2000 -500 300 L 50 50 1 1 I
+X XOUT/P2.7 18 2000 -50 300 L 50 50 1 1 I
+X XIN/P2.6/TA0.1 19 2000 50 300 L 50 50 1 1 I
+X P1.0/TA0CLK/ACLK/A0/CA0 2 -1900 700 300 R 50 50 1 1 I
+X DVSS 20 -1900 -500 300 R 50 50 1 1 I
+X P1.1/TA0.0/UCA0RXD/UCA0SOMI/A1/CA1 3 -1900 600 300 R 50 50 1 1 I
+X P1.2/TA0.1/UCA0TXD/PUCA0SIMO/A2/CA2 4 -1900 500 300 R 50 50 1 1 I
+X P1.3/ADC10CLK/CAOUT/VREF-/VEREF-/A3/CA3 5 -1900 400 300 R 50 50 1 1 I
+X P1.4/SMCLK/UCB0STE/UCA0CLK/VREF+/VEREF+/A4/CA4/TCK 6 -1900 300 300 R 50 50 1 1 I
+X P1.5/TA0.0/UCB0CLK/UCA0STE/A5/CA5/TMS 7 -1900 200 300 R 50 50 1 1 I
+X P2.0/TA1.0 8 2000 700 300 L 50 50 1 1 I
+X P2.1/TA1.1 9 2000 600 300 L 50 50 1 1 I
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_Q_NMOS_GSD-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_Q_NMOS_GSD-REM_sleep_analysis-rescue Q 0 0 Y N 1 F N
+F0 "Q" 200 50 50 H V L CNN
+F1 "REM_sleep_analysis-rescue_Q_NMOS_GSD-REM_sleep_analysis-rescue" 200 -50 50 H V L CNN
+F2 "" 200 100 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+C 65 0 111 0 1 10 N
+C 100 -70 11 0 1 0 F
+C 100 70 11 0 1 0 F
+P 2 0 1 0 2 0 10 0 N
+P 2 0 1 0 30 -70 100 -70 N
+P 2 0 1 10 30 -50 30 -90 N
+P 2 0 1 0 30 0 100 0 N
+P 2 0 1 10 30 20 30 -20 N
+P 2 0 1 0 30 70 100 70 N
+P 2 0 1 10 30 90 30 50 N
+P 2 0 1 0 100 -70 100 -100 N
+P 2 0 1 0 100 -70 100 0 N
+P 2 0 1 0 100 100 100 70 N
+P 3 0 1 10 10 75 10 -75 10 -75 N
+P 4 0 1 0 40 0 80 15 80 -15 40 0 F
+P 4 0 1 0 100 -70 130 -70 130 70 100 70 N
+P 4 0 1 0 110 20 115 15 145 15 150 10 N
+P 4 0 1 0 130 15 115 -10 145 -10 130 15 N
+X G 1 -200 0 200 R 50 50 1 1 I
+X S 2 100 -200 100 U 50 50 1 1 P
+X D 3 100 200 100 D 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_Q_PMOS_GSD-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_Q_PMOS_GSD-REM_sleep_analysis-rescue Q 0 0 Y N 1 F N
+F0 "Q" 200 50 50 H V L CNN
+F1 "REM_sleep_analysis-rescue_Q_PMOS_GSD-REM_sleep_analysis-rescue" 200 -50 50 H V L CNN
+F2 "" 200 100 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+C 65 0 111 0 1 10 N
+C 100 -70 11 0 1 0 F
+C 100 70 11 0 1 0 F
+P 2 0 1 0 2 0 10 0 N
+P 2 0 1 0 30 -70 100 -70 N
+P 2 0 1 10 30 -50 30 -90 N
+P 2 0 1 0 30 0 100 0 N
+P 2 0 1 10 30 20 30 -20 N
+P 2 0 1 0 30 70 100 70 N
+P 2 0 1 10 30 90 30 50 N
+P 2 0 1 0 100 -70 100 -100 N
+P 2 0 1 0 100 -70 100 0 N
+P 2 0 1 0 100 100 100 70 N
+P 3 0 1 10 10 75 10 -75 10 -75 N
+P 4 0 1 0 90 0 50 -15 50 15 90 0 F
+P 4 0 1 0 100 -70 130 -70 130 70 100 70 N
+P 4 0 1 0 110 -20 115 -15 145 -15 150 -10 N
+P 4 0 1 0 130 -15 115 10 145 10 130 -15 N
+X G 1 -200 0 200 R 50 50 1 1 I
+X S 2 100 -200 100 U 50 50 1 1 P
+X D 3 100 200 100 D 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_R-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_R-REM_sleep_analysis-rescue R 0 0 N Y 1 F N
+F0 "R" 80 0 50 V V C CNN
+F1 "REM_sleep_analysis-rescue_R-REM_sleep_analysis-rescue" 0 0 50 V V C CNN
+F2 "" -70 0 50 V I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ R_*
+ R_*
+$ENDFPLIST
+DRAW
+S -40 -100 40 100 0 1 10 N
+X ~ 1 0 150 50 D 50 50 1 1 P
+X ~ 2 0 -150 50 U 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_RN4020-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_RN4020-REM_sleep_analysis-rescue U 0 40 Y Y 1 F N
+F0 "U" -500 1450 60 H V L CNN
+F1 "REM_sleep_analysis-rescue_RN4020-REM_sleep_analysis-rescue" -500 -1250 60 H V L CNN
+F2 "" -200 0 60 H V C CNN
+F3 "" -200 0 60 H V C CNN
+DRAW
+S 600 1400 -500 -1200 0 1 0 N
+X GND 1 -700 -800 200 R 50 50 1 1 W
+X CONNLED/PIO1/SCK/PWM1 10 800 300 200 L 50 50 1 1 O
+X MLDPEV/PIO2/CS/PWM2 11 800 200 200 L 50 50 1 1 O
+X WS/PIO3/MOSI/PWM3 12 800 100 200 L 50 50 1 1 O
+X PIO4/MISO 13 800 -100 200 L 50 50 1 1 B
+X UARTCTS/PIO5 14 800 1100 200 L 50 50 1 1 B
+X WAKEHW 15 800 500 200 L 50 50 1 1 I
+X GND 16 -700 -1000 200 R 50 50 1 1 W
+X SPI/~PIO 17 800 -200 200 L 50 50 1 1 I
+X UARTRTS/PIO6 18 800 1000 200 L 50 50 1 1 B
+X PWM4/PIO7 19 800 -300 200 L 50 50 1 1 B
+X AIO2 2 800 -900 200 L 50 50 1 1 B
+X RSVD 20 800 -1100 200 L 50 50 1 1 N
+X SDA 21 800 -400 200 L 50 50 1 1 B
+X SCL 22 800 -500 200 L 50 50 1 1 I
+X VDD 23 -700 1300 200 R 50 50 1 1 W
+X GND 24 -700 -1100 200 R 50 50 1 1 W
+X AIO1 3 800 -800 200 L 50 50 1 1 B
+X AIO0 4 800 -700 200 L 50 50 1 1 B
+X UARTTX 5 800 1300 200 L 50 50 1 1 O
+X UARTRX 6 800 1200 200 L 50 50 1 1 I
+X WAKESW 7 800 600 200 L 50 50 1 1 I
+X CMD/MLDP 8 800 800 200 L 50 50 1 1 I
+X GND 9 -700 -900 200 R 50 50 1 1 W
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_R_Variable-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_R_Variable-REM_sleep_analysis-rescue R 0 0 N Y 1 F N
+F0 "R" 100 -100 50 V V L CNN
+F1 "REM_sleep_analysis-rescue_R_Variable-REM_sleep_analysis-rescue" -100 -50 50 V V L CNN
+F2 "" -70 0 50 V I C CNN
+F3 "" 0 0 50 H I C CNN
+$FPLIST
+ R_*
+$ENDFPLIST
+DRAW
+S -40 -100 40 100 0 1 10 N
+P 5 0 1 0 100 60 100 100 60 100 100 100 -80 -80 N
+X ~ 1 0 150 50 D 50 50 1 1 P
+X ~ 2 0 -150 50 U 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_TEST-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_TEST-REM_sleep_analysis-rescue TP 0 40 N N 1 F N
+F0 "TP" 0 300 50 H V C BNN
+F1 "REM_sleep_analysis-rescue_TEST-REM_sleep_analysis-rescue" 0 250 50 H V C CNN
+F2 "" 0 0 50 H I C CNN
+F3 "" 0 0 50 H I C CNN
+DRAW
+P 6 0 1 0 0 200 -50 150 0 100 50 150 0 200 0 200 N
+X ~ 1 0 0 100 U 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_USB_OTG-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_USB_OTG-REM_sleep_analysis-rescue J 0 40 Y Y 1 F N
+F0 "J" -200 450 50 H V L CNN
+F1 "REM_sleep_analysis-rescue_USB_OTG-REM_sleep_analysis-rescue" -200 350 50 H V L CNN
+F2 "" 150 -50 50 H I C CNN
+F3 "" 150 -50 50 H I C CNN
+$FPLIST
+ USB*
+$ENDFPLIST
+DRAW
+C -150 85 25 0 1 10 F
+C -25 135 15 0 1 10 F
+S -200 -300 200 300 0 1 10 f
+S -5 -300 5 -270 0 1 0 N
+S 10 50 -20 20 0 1 10 F
+S 200 -205 170 -195 0 1 0 N
+S 200 -105 170 -95 0 1 0 N
+S 200 -5 170 5 0 1 0 N
+S 200 195 170 205 0 1 0 N
+P 2 0 1 10 -75 85 25 85 N
+P 4 0 1 10 -125 85 -100 85 -50 135 -25 135 N
+P 4 0 1 10 -100 85 -75 85 -50 35 0 35 N
+P 4 0 1 10 25 110 25 60 75 85 25 110 F
+P 5 0 1 0 -170 220 -70 220 -80 190 -160 190 -170 220 F
+P 9 0 1 0 -185 230 -185 220 -175 190 -175 180 -65 180 -65 190 -55 220 -55 230 -185 230 N
+X VBUS 1 300 200 100 L 50 50 1 1 W
+X D- 2 300 -100 100 L 50 50 1 1 P
+X D+ 3 300 0 100 L 50 50 1 1 P
+X ID 4 300 -200 100 L 50 50 1 1 P
+X GND 5 0 -400 100 U 50 50 1 1 W
+X Shield 6 -100 -400 100 U 50 50 1 1 P
+ENDDRAW
+ENDDEF
+#
+# REM_sleep_analysis-rescue_sw_slide_7x3-REM_sleep_analysis-rescue
+#
+DEF REM_sleep_analysis-rescue_sw_slide_7x3-REM_sleep_analysis-rescue S 0 40 Y Y 1 F N
+F0 "S" 0 450 60 H V C CNN
+F1 "REM_sleep_analysis-rescue_sw_slide_7x3-REM_sleep_analysis-rescue" 0 450 60 H V C CNN
+F2 "" 0 450 60 H I C CNN
+F3 "" 0 450 60 H I C CNN
+DRAW
+X 1 1 -150 150 200 R 50 50 1 1 B
+X 2 2 -150 250 200 R 50 50 1 1 B
+X 3 3 -150 350 200 R 50 50 1 1 B
+ENDDRAW
+ENDDEF
+#
+#End Library

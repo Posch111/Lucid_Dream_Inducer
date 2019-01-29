@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="gerber.benjamin.lucidio.CueFragment" >
+
+
+    <TimePicker
+        android:id="@+id/timePicker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="56dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ToggleButton
+        android:id="@+id/toggleMon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:textOff="@string/mon_butt"
+        android:textOn="@string/mon_butt"
+        app:layout_constraintEnd_toStartOf="@+id/toggleTues"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/timePicker"
+        tools:text="@string/mon_butt" />
+
+    <ToggleButton
+        android:id="@+id/toggleTues"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:textOff="@string/tues_butt"
+        android:textOn="@string/tues_butt"
+        app:layout_constraintEnd_toStartOf="@+id/toggleWed"
+        app:layout_constraintStart_toEndOf="@+id/toggleMon"
+        app:layout_constraintTop_toBottomOf="@+id/timePicker"
+        tools:text="@string/tues_butt" />
+
+    <ToggleButton
+        android:id="@+id/toggleWed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:textOff="@string/wed_butt"
+        android:textOn="@string/wed_butt"
+        app:layout_constraintEnd_toStartOf="@+id/toggleThurs"
+        app:layout_constraintStart_toEndOf="@+id/toggleTues"
+        app:layout_constraintTop_toBottomOf="@+id/timePicker"
+        tools:text="@string/wed_butt" />
+
+    <ToggleButton
+        android:id="@+id/toggleThurs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="32dp"
+        android:textOff="@string/thurs_butt"
+        android:textOn="@string/thurs_butt"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/toggleWed"
+        app:layout_constraintTop_toBottomOf="@+id/timePicker"
+        tools:text="@string/fri_butt" />
+
+    <ToggleButton
+        android:id="@+id/toggleFri"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:textOff="@string/fri_butt"
+        android:textOn="@string/fri_butt"
+        app:layout_constraintEnd_toStartOf="@+id/toggleSat"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toggleMon"
+        tools:text="@string/fri_butt" />
+
+    <ToggleButton
+        android:id="@+id/toggleSat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textOff="@string/sat_butt"
+        android:textOn="@string/sat_butt"
+        app:layout_constraintEnd_toStartOf="@+id/toggleSun"
+        app:layout_constraintStart_toEndOf="@+id/toggleFri"
+        app:layout_constraintTop_toBottomOf="@+id/toggleTues"
+        tools:text="@string/sat_butt" />
+
+    <ToggleButton
+        android:id="@+id/toggleSun"
+        android:layout_width="88dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="48dp"
+        android:textOff="@string/sun_butt"
+        android:textOn="@string/sun_butt"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/toggleSat"
+        app:layout_constraintTop_toBottomOf="@+id/toggleWed"
+        tools:text="@string/sun_butt" />
+
+    <Switch
+        android:id="@+id/switch_sleep"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:switchTextAppearance="@style/TextAppearance.AppCompat"
+        android:text="Alarm:"
+        app:layout_constraintBottom_toTopOf="@+id/toggleTues"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/timePicker" />
+
+</android.support.constraint.ConstraintLayout>

@@ -1,0 +1,19 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#
+# mini_pushbutton_SMT_COM-08720
+#
+DEF mini_pushbutton_SMT_COM-08720 S 0 40 Y Y 1 F N
+F0 "S" 0 0 60 H V C CNN
+F1 "mini_pushbutton_SMT_COM-08720" 0 0 60 H V C CNN
+F2 "" 0 0 60 H I C CNN
+F3 "" 0 0 60 H I C CNN
+DRAW
+X 1 1 -300 -100 200 R 50 50 1 1 B
+X 2 2 300 -100 200 L 50 50 1 1 B
+X 3 3 -300 -200 200 R 50 50 1 1 B
+X 4 4 300 -200 200 L 50 50 1 1 B
+ENDDRAW
+ENDDEF
+#
+#End Library
