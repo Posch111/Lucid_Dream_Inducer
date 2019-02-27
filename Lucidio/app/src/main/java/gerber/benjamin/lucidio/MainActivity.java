@@ -279,6 +279,7 @@ public class MainActivity extends AppCompatActivity {
     //Handles connecting to devices on API < 21 and API > 21
     public void scanLeDevice(final boolean enable) {
         mDeviceList.clear();
+
         if (enable) {
             mHandler.postDelayed(new Runnable() {
                 @Override
@@ -361,14 +362,14 @@ public class MainActivity extends AppCompatActivity {
                 mConnected = true;
                 runOnUiThread(new Runnable() {
                     public void run() {
-                        Toast.makeText(getApplicationContext(), "Bluetooth Connected", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getApplicationContext(), "Bluetooth Connected", Toast.LENGTH_SHORT).show();
                     }
                 });
             } else if (bleService.ACTION_GATT_DISCONNECTED.equals(action)) {
                 mConnected = false;
                 runOnUiThread(new Runnable() {
                     public void run() {
-                        Toast.makeText(getApplicationContext(), "Bluetooth Disconnected", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getApplicationContext(), "Bluetooth Disconnected", Toast.LENGTH_SHORT).show();
                     }
                 });
             } else if (bleService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
@@ -469,7 +470,7 @@ public class MainActivity extends AppCompatActivity {
     public void saveSettings(){
 
         //Initialize First Time settings
-        if(firstTimeFlag == true){
+        if(firstTimeFlag){
             settingsBytes = new byte[] {(byte)0, (byte)0, (byte)0, (byte)50, };
             firstTimeFlag = false;
         }
@@ -477,7 +478,7 @@ public class MainActivity extends AppCompatActivity {
         //Opens file, creates a new file if none exists, and writes the settings
         File settingsFile = new File(this.getFilesDir(), SETTINGS_FILENAME);
         try{
-            if(settingsFile.exists() == false) {
+            if(settingsFile.exists()) {
                 settingsFile.delete();
                 Log.i("CONFIG", "Created Config File");
             }

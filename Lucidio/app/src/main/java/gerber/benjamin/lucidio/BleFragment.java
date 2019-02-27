@@ -45,8 +45,8 @@ public class BleFragment extends Fragment implements View.OnClickListener{
         mHandler = new Handler();
 
         //Initializing texts, Progress Bar, and List
-        final ListView listView = (ListView) v.findViewById(R.id.scanResults);
-        scanProgressBar = (ProgressBar) v.findViewById(R.id.scanProgressBar);
+        final ListView listView = v.findViewById(R.id.scanResults);
+        scanProgressBar = v.findViewById(R.id.scanProgressBar);
         scanProgressBar.setVisibility(View.INVISIBLE);
         resultList  = new ArrayList<String>();
         mDeviceListAdapter = new ArrayAdapter(getActivity(),android.R.layout.simple_list_item_1, resultList); //creates list adapter for viewing
@@ -60,19 +60,19 @@ public class BleFragment extends Fragment implements View.OnClickListener{
                 Object deviceSelect = listView.getItemAtPosition(position);
                 if(deviceSelect.toString() == info)
                     clicked = !clicked;
-                if(clicked == true)
-                    ((MainActivity)getActivity()).bleService.mGatt.disconnect();
+                if(clicked)
+                    BLEService.mGatt.disconnect();
                 else
                     info = deviceSelect.toString();
                 String address = info.substring(info.length() - 17);
 
-                for(int i = 0; i < ((MainActivity)getActivity()).mDeviceList.size(); i++){
-                    if(((MainActivity)getActivity()).mDeviceList.get(i).toString().contains(address)) {
-                        ((MainActivity)getActivity()).device = ((MainActivity)getActivity()).mDeviceList.get(i);
-                        Log.i("Device", ((MainActivity)getActivity()).device.toString());
+                for(int i = 0; i < MainActivity.mDeviceList.size(); i++){
+                    if(((MainActivity.mDeviceList.get(i).toString().contains(address)))) {
+                        MainActivity.device = MainActivity.mDeviceList.get(i);
+                        Log.i("Device", MainActivity.device.toString());
                     }
                 }
-                ((MainActivity)getActivity()).bleService.connectToDevice(((MainActivity)getActivity()).device);
+                ((MainActivity)getActivity()).bleService.connectToDevice(MainActivity.device);
 
             }
         });
@@ -93,10 +93,11 @@ public class BleFragment extends Fragment implements View.OnClickListener{
             case (R.id.button_scan):
                 //Clears scan result list
                 resultList.clear();
-                ((MainActivity)getActivity()).device = null;
+                MainActivity.device = null;
 
                 //Initiates Scan and makes indeterminate progressbar visible
                 Log.i("BT", "Starting Bluetooth Scan");
+
                 Toast.makeText(getActivity(), "Scanning", Toast.LENGTH_SHORT).show();
                 ((MainActivity)getActivity()).scanLeDevice(true);
                 scanProgressBar.setVisibility(View.VISIBLE);
@@ -107,12 +108,12 @@ public class BleFragment extends Fragment implements View.OnClickListener{
                     @Override
                     public void run(){
                         //Creates and displays device list
-                        if(((MainActivity)getActivity()).mDeviceList != null) {
-                            for (int i = 0; i < ((MainActivity)getActivity()).mDeviceList.size(); i++){
+                        if(MainActivity.mDeviceList != null) {
+                            for (int i = 0; i < MainActivity.mDeviceList.size(); i++){
                                 //Log.i("Device ", "Address:"+ MainActivity.mDeviceList.get(i).getAddress()
                                 //+ " Name:" + MainActivity.mDeviceList.get(i).getName()); //Logs the device list names
-                                mDeviceListAdapter.add(((MainActivity)getActivity()).mDeviceList.get(i).getName() +
-                                        "\n" + ((MainActivity)getActivity()).mDeviceList.get(i).getAddress()); //Adds the device list to the list adapter
+                                mDeviceListAdapter.add(MainActivity.mDeviceList.get(i).getName() +
+                                        "\n" + ((MainActivity.mDeviceList.get(i).getAddress()))); //Adds the device list to the list adapter
                             }
                         }
                         mDeviceListAdapter.notifyDataSetChanged(); //Update List
@@ -123,7 +124,7 @@ public class BleFragment extends Fragment implements View.OnClickListener{
                 break;
 
             case (R.id.button_disconnect):
-                if(((MainActivity)getActivity()).bleService.mGatt != null) {
+                if(BLEService.mGatt != null) {
                     ((MainActivity) getActivity()).bleService.disconnectDevice();
                 }
                 break;

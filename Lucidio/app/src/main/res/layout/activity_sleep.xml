@@ -24,6 +24,7 @@
         android:layout_marginTop="24dp"
         android:layout_marginEnd="48dp"
         android:text="End Sleep"
+        android:onClick="onClick"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/sleep_graph_rt" />

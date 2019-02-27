@@ -37,10 +37,10 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_sleep, container, false);
 
-        if (((MainActivity) getActivity()).device == null) {
-            Toast.makeText((MainActivity)getActivity(), "Bluetooth Not Connected", Toast.LENGTH_SHORT).show();
-            ((MainActivity)getActivity()).cmdrun = false;
-            ((MainActivity)getActivity()).datarun = false;
+        if (MainActivity.device == null) {
+            Toast.makeText(getActivity(), "Bluetooth Not Connected", Toast.LENGTH_SHORT).show();
+            SleepActivity.cmdrun = false;
+            SleepActivity.datarun = false;
             try{
                 Thread.sleep(1000);
             }catch(InterruptedException e){
@@ -54,12 +54,12 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
 
         //Initializes an dummy array for the creation of the graph (array will be offset by 1920)
         for (int i = 0; i < 1920; i++) {
-            ((MainActivity) getActivity()).currentLocalTime.getTime();
-            ((MainActivity) getActivity()).mEogDataTime.add(System.currentTimeMillis());
-            ((MainActivity) getActivity()).mEogData.add(i, 150);
+            MainActivity.currentLocalTime.getTime();
+            MainActivity.mEogDataTime.add(System.currentTimeMillis());
+            MainActivity.mEogData.add(i, 150);
         }
         //Initialize data streaming
-        ((MainActivity) getActivity()).sleeping = true;
+        BLEService.sleeping = true;
 
         //Initializes second graphview
         GraphView graph = (GraphView) v.findViewById(R.id.sleep_graph_rt);
@@ -72,7 +72,7 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
             public String formatLabel(double value, boolean isValueX) {
                 if (isValueX) {
                     // show normal x values
-                    return ((MainActivity) getActivity()).timeFormatter.format(value);
+                    return MainActivity.timeFormatter.format(value);
                 }
                 return null;
             }
@@ -94,8 +94,8 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
         final Button button = (Button) v.findViewById(R.id.end_sleep_butt);
         button.setOnClickListener(this);
 
-        ((MainActivity)getActivity()).cmdrun = true;
-        ((MainActivity)getActivity()).datarun = true;
+        SleepActivity.cmdrun = true;
+        SleepActivity.datarun = true;
 
         return v;
     }
@@ -133,8 +133,8 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
     public void onClick(View view) {
         switch(view.getId()) {
             case (R.id.end_sleep_butt):
-                ((MainActivity)getActivity()).cmdrun = false;
-                ((MainActivity)getActivity()).datarun = false;
+                SleepActivity.cmdrun = false;
+                SleepActivity.datarun = false;
                 byte[] data = new byte[] {(byte)75};
                 ((MainActivity)getActivity()).bleService.writeData(data);
                 try{
@@ -144,7 +144,7 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
                 }
                 data[0] = (byte)76;
                 ((MainActivity)getActivity()).bleService.writeData(data);
-                ((MainActivity)getActivity()).sleeping = false;
+                BLEService.sleeping = false;
                 Fragment frag = new DataFragment();
                 FragmentTransaction transaction = getFragmentManager().beginTransaction();
                 transaction.replace(R.id.frame, frag); // replace a Fragment with Frame Layout
@@ -159,7 +159,7 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
 
     public class dataRunnable implements Runnable {
         public void run(){
-            while (((MainActivity)getActivity()).datarun) {
+            while (SleepActivity.datarun) {
                 while (!Thread.currentThread().isInterrupted()) {
                     ((MainActivity) getActivity()).saveEogData();
                     try{
@@ -174,7 +174,7 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
 
     public class cmdRunnable implements Runnable {
         public void run() {
-            while (((MainActivity)getActivity()).cmdrun) {
+            while (SleepActivity.cmdrun) {
                 while (!Thread.currentThread().isInterrupted()) {
                     // do something in the loop
                     try {

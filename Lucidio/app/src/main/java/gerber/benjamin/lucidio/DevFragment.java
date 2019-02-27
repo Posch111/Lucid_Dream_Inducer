@@ -1,5 +1,6 @@
 package gerber.benjamin.lucidio;
 
+import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -58,10 +59,10 @@ public class DevFragment extends Fragment implements View.OnClickListener{
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 byte data[] = null;
                 if (isChecked){
-                    ((MainActivity)getActivity()).settingsBytes[0] = (byte) 1;
+                    MainActivity.settingsBytes[0] = (byte) 1;
                     Log.i("CMD", "Motor On");
                 } else {
-                    ((MainActivity)getActivity()).settingsBytes[0] = (byte) 0;
+                    MainActivity.settingsBytes[0] = (byte) 0;
                     Log.i("CMD", "Motor Off");
                 }
             }
@@ -74,11 +75,21 @@ public class DevFragment extends Fragment implements View.OnClickListener{
                 byte data[] = null;
                 if (isChecked) {
                     // The toggle is disabled
-                    ((MainActivity)getActivity()).settingsBytes[1] = (byte) 1;
+                    MainActivity.settingsBytes[1] = (byte) 1;
+
+                    byte[] ledEnableCommand = new byte[] {77};
+                    try{
+                        ((MainActivity)getActivity()).bleService.writeData(ledEnableCommand);
+                        Thread.sleep(120); //Extra delay for sending LED value after receive cmd
+                    }catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
+
                     Log.i("CMD", "LED 3 On");
+
                 } else {
                     // The toggle is disabled
-                    ((MainActivity)getActivity()).settingsBytes[1] = (byte) 0;
+                    MainActivity.settingsBytes[1] = (byte) 0;
                     Log.i("CMD", "LED 3 Off");
                 }
             }
@@ -90,11 +101,11 @@ public class DevFragment extends Fragment implements View.OnClickListener{
                 byte data[] = null;
                 if (isChecked) {
                     // The toggle is disabled
-                    ((MainActivity)getActivity()).settingsBytes[2] = (byte) 1;
+                    MainActivity.settingsBytes[2] = (byte) 1;
                     Log.i("CMD", "LED 4 On");
                 } else {
                     // The toggle is disabled
-                    ((MainActivity)getActivity()).settingsBytes[2] = (byte) 0;
+                    MainActivity.settingsBytes[2] = (byte) 0;
                     Log.i("CMD", "LED 4 Off");
                 }
             }
@@ -129,14 +140,15 @@ public class DevFragment extends Fragment implements View.OnClickListener{
             }
         });
 
-        seekBar.setProgress((int)((MainActivity)getActivity()).settingsBytes[3]);
-        if((int)(((MainActivity)getActivity()).settingsBytes[0]) == 1){
+        seekBar.setProgress((int)(MainActivity.settingsBytes[3]));
+        if((int)(MainActivity.settingsBytes[0]) == 1){
             toggleButton.setChecked(true);
         }
-        if((int)(((MainActivity)getActivity()).settingsBytes[1]) == 1){
+        if((int)(MainActivity.settingsBytes[1]) == 1){
             toggleButton1.setChecked(true);
+
         }
-        if((int)(((MainActivity)getActivity()).settingsBytes[2]) == 1){
+        if((int)(MainActivity.settingsBytes[2]) == 1){
             toggleButton2.setChecked(true);
         }
 
@@ -151,18 +163,18 @@ public class DevFragment extends Fragment implements View.OnClickListener{
             case (R.id.stop_rem_butt):                          //Stop REM Command
                 data = new byte[]{(byte) 73};
                 ((MainActivity) getActivity()).bleService.writeData(data);
-                ((MainActivity)getActivity()).bleService.sleeping = false;
+                BLEService.sleeping = false;
                 break;
 
             case (R.id.set_led_butt):
-                ((MainActivity)getActivity()).settingsBytes[3] = (byte) ledValue;                   //LED Value 0-100
+                MainActivity.settingsBytes[3] = (byte) ledValue;                   //LED Value 0-100
                 ((MainActivity)getActivity()).applyBrightness();
                 data = new byte[]{(byte) 99};
                 try{
                     Thread.sleep(200);
                     ((MainActivity)getActivity()).bleService.writeData(data);
                 }catch (Exception e){return;}
-                break;  
+                break;
 
             case (R.id.start_rem_butt):
                 data = new byte[]{(byte) 74};                   //Button to kick us into REM sleep
@@ -172,18 +184,18 @@ public class DevFragment extends Fragment implements View.OnClickListener{
             case (R.id.start_sleep_butt):                       //Sleep Button
                 data = new byte[]{(byte) 73};
                 ((MainActivity)getActivity()).bleService.writeData(data);
-                ((MainActivity)getActivity()).bleService.sleeping = true;
+                BLEService.sleeping = true;
                 break;
 
             case (R.id.stop_sleep_butt):
                 data = new byte[]{(byte) 76};
                 ((MainActivity)getActivity()).bleService.writeData(data);
-                ((MainActivity)getActivity()).bleService.sleeping = false;
+                BLEService.sleeping = false;
                 break;
 
             case(R.id.button_default):                          //Reset to Default Settings
-                ((MainActivity)getActivity()).firstTimeFlag = true;
-                ((MainActivity)getActivity()).settingsBytes = new byte[] {(byte)0, (byte)0, (byte)0, (byte)50, };
+                MainActivity.firstTimeFlag = true;
+                MainActivity.settingsBytes = new byte[] {(byte)0, (byte)0, (byte)0, (byte)50, };
         }
     }
 

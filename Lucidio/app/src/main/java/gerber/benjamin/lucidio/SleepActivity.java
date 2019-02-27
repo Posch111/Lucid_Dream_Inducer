@@ -1,6 +1,7 @@
 package gerber.benjamin.lucidio;
 
 import android.content.ComponentName;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Environment;
@@ -9,6 +10,7 @@ import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -83,16 +85,16 @@ public class SleepActivity extends AppCompatActivity {
 
         //Initializes an dummy array for the creation of the graph (array will be offset by 1920)
         for (int i = 0; i < 1920; i++) {
-            ((MainActivity) getActivity()).currentLocalTime.getTime();
-            ((MainActivity) getActivity()).mEogDataTime.add(System.currentTimeMillis());
-            ((MainActivity) getActivity()).mEogData.add(i, 150);
+            MainActivity.currentLocalTime.getTime();
+            MainActivity.mEogDataTime.add(System.currentTimeMillis());
+            MainActivity.mEogData.add(i, 150);
         }
 
         //Initialize data streaming
         bleService.sleeping = true;
 
         //Initializes second graphview
-        GraphView graph = (GraphView) findViewById(R.id.sleep_graph_rt);
+        GraphView graph = findViewById(R.id.sleep_graph_rt);
         mSeries = new LineGraphSeries<>();
         graph.addSeries(mSeries);
 
@@ -123,8 +125,7 @@ public class SleepActivity extends AppCompatActivity {
         graph.getViewport().setMaxY(250);
 
         //Buttons
-        final Button button = (Button) findViewById(R.id.end_sleep_butt);
-        button.setOnClickListener(this);
+        final Button button = findViewById(R.id.end_sleep_butt);;
 
         cmdrun = true;
         datarun = true;
@@ -138,17 +139,17 @@ public class SleepActivity extends AppCompatActivity {
         mTimer = new Runnable() {
             @Override
             public void run() {
-                mSeries.appendData(new DataPoint(((MainActivity) getActivity()).mEogDataTime.get(
-                        ((MainActivity) getActivity()).mEogDataTime.size() - 1),
-                        ((MainActivity) getActivity()).mEogData.get(
-                                ((MainActivity) getActivity()).mEogData.size() - 1)), true, 1920);
+                mSeries.appendData(new DataPoint(MainActivity.mEogDataTime.get(
+                        MainActivity.mEogDataTime.size() - 1),
+                        MainActivity.mEogData.get(
+                                MainActivity.mEogData.size() - 1)), true, 1920);
                 mHandler.postDelayed(this, 100);
             }
         };
         mHandler.postDelayed(mTimer, 1000);
-
-        new Thread(new SleepFragment.dataRunnable()).start();
-        new Thread(new SleepFragment.cmdRunnable()).start();
+//TODO
+       // new Thread(new SleepFragment.dataRunnable()).start();
+       // new Thread(new SleepFragment.cmdRunnable()).start();
 
     }
 
@@ -178,24 +179,24 @@ public class SleepActivity extends AppCompatActivity {
 
 
     //Created a click listener for all of the buttons
-    @Override
     public void onClick(View view) {
         switch(view.getId()) {
             case (R.id.end_sleep_butt):
-                ((MainActivity)getActivity()).cmdrun = false;
-                ((MainActivity)getActivity()).datarun = false;
+                SleepActivity.cmdrun = false;
+                SleepActivity.datarun = false;
                 byte[] data = new byte[] {(byte)75};
-                ((MainActivity)getActivity()).writeData(data);
+                bleService.writeData(data);
                 try{
                     Thread.sleep(150);
                 }catch(InterruptedException e){
                     e.printStackTrace();
                 }
                 data[0] = (byte)76;
-                ((MainActivity)getActivity()).writeData(data);
-                ((MainActivity)getActivity()).sleeping = false;
+                bleService.writeData(data);
+                BLEService.sleeping = false;
                 Fragment frag = new DataFragment();
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                FragmentManager fragmentManager= getSupportFragmentManager();
+                FragmentTransaction transaction = fragmentManager.beginTransaction();
                 transaction.replace(R.id.frame, frag); // replace a Fragment with Frame Layout
                 transaction.commit(); // commit the changes
                 break;
@@ -257,9 +258,9 @@ public class SleepActivity extends AppCompatActivity {
         ArrayList<Long> mEogDataTimeWrite = new ArrayList<>();                                       //Temp data set array
         ArrayList<Integer>mEogDataWrite = new ArrayList<>();                                        //
         int eogSize = mEogData.size() - 1;                                                          //Current array size
-        int eogSizeRel = (mEogData.size() - 1) - eogLastWriteIndex;
+        int eogSizeRel = (mEogData.size() - 1) - MainActivity.eogLastWriteIndex;
 
-        for(int i = eogLastWriteIndex; i < eogSize; i++){                                           //Build temp arrays
+        for(int i = MainActivity.eogLastWriteIndex; i < eogSize; i++){                                           //Build temp arrays
             mEogDataTimeWrite.add(mEogDataTime.get(i));                                             //to log last chunk of
             mEogDataWrite.add(mEogData.get(i));                                                     //data since last call
         }
@@ -281,7 +282,7 @@ public class SleepActivity extends AppCompatActivity {
             Log.i("STORAGE", "EOG data not successfully saved");
             return false;
         }
-        eogLastWriteIndex = eogSize;
+        MainActivity.eogLastWriteIndex = eogSize;
         Log.i("STORAGE", "EOG data saved");
         return true;
     }

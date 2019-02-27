@@ -72,6 +72,11 @@ public class BLEService extends Service {
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
 
         mBluetoothAdapter = bluetoothManager.getAdapter();
+
+        if (mBluetoothAdapter == null){
+            throw new NullPointerException("No Bluetooth Adapter Found");
+        }
+
         mHandler = new Handler();
 
         return true;
@@ -98,9 +103,20 @@ public class BLEService extends Service {
 
     //Connect to device call to handle disconnects
     public void connectToDevice(BluetoothDevice device) {
+        disconnectDevice();
         mDevice = device;
+        initialize();
+
         if (mGatt == null) {
             mGatt = device.connectGatt(this, false, gattCallback);
+            int state = mBluetoothAdapter.getState();
+            if(state == mGatt.STATE_DISCONNECTED || state == mGatt.STATE_DISCONNECTING){
+                Toast.makeText(this,"Unable to Connect", Toast.LENGTH_SHORT);
+                //throw new NullPointerException("Connection Failed");
+            }
+            else if (state == mGatt.STATE_CONNECTED){
+                Toast.makeText(this, "Connected to " + device.getName(), Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -108,8 +124,12 @@ public class BLEService extends Service {
     public void disconnectDevice() {
         if (mGatt != null) {
             mGatt.disconnect();
+            Toast.makeText(getApplicationContext(), "Disconnected from " + mDevice.getName(), Toast.LENGTH_SHORT).show();
             mGatt = null;
+            mDevice = null;
             MainActivity.device = null;
+
+
         }
     }
 
@@ -142,6 +162,11 @@ public class BLEService extends Service {
             super.onServicesDiscovered(gatt, status);
             broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
 
+            if(gatt == null){
+                Toast.makeText(getApplicationContext(), "gatt null", Toast.LENGTH_SHORT);
+                return;
+            }
+
             List<BluetoothGattService> services = mGatt.getServices();
             Log.i("Services:", services.toString());
             //mGatt.readCharacteristic(services.get(1).getCharacteristics().get(0));
@@ -160,7 +185,7 @@ public class BLEService extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             //Process of receiving, parsing, and adding data to the data array
-            if (sleeping == true) {
+            if (sleeping) {
                     //This is the code section to receive analog data and outputting it to an array
                     final byte data[] = characteristic.getValue();
                     mData = buildByteData(data);
