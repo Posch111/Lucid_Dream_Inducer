@@ -66,21 +66,21 @@ public class BLEService extends Service {
     public static boolean sleeping = false;
     public int fCount;
 
-    public boolean initialize() {
-
-        final BluetoothManager bluetoothManager =
-                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-
-        mBluetoothAdapter = bluetoothManager.getAdapter();
-
-        if (mBluetoothAdapter == null){
-            throw new NullPointerException("No Bluetooth Adapter Found");
-        }
-
-        mHandler = new Handler();
-
-        return true;
-    }
+//    public boolean initialize() {
+//
+//        final BluetoothManager bluetoothManager =
+//                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
+//
+//        mBluetoothAdapter = bluetoothManager.getAdapter();
+//
+//        if (mBluetoothAdapter == null){
+//            throw new NullPointerException("No Bluetooth Adapter Found");
+//        }
+//
+//        mHandler = new Handler();
+//
+//        return true;
+//    }
 
 
     @Override
@@ -105,7 +105,6 @@ public class BLEService extends Service {
     public void connectToDevice(BluetoothDevice device) {
         disconnectDevice();
         mDevice = device;
-        initialize();
 
         if (mGatt == null) {
             mGatt = device.connectGatt(this, false, gattCallback);
@@ -223,7 +222,7 @@ public class BLEService extends Service {
             }
         }
         return mData;
-    };
+    }
 
     /*
      * Writes data passed to the function to the command characteristic

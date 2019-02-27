@@ -55,9 +55,14 @@ public class BleFragment extends Fragment implements View.OnClickListener{
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String info = null;
-                boolean clicked = false;
                 Object deviceSelect = listView.getItemAtPosition(position);
+                String info = deviceSelect.toString();
+                boolean clicked = false;
+
+                if(info == null){
+                    BLEService.mGatt.disconnect();
+                }
+
                 if(deviceSelect.toString() == info)
                     clicked = !clicked;
                 if(clicked)

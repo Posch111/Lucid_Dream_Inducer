@@ -166,6 +166,7 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "BLE Not Supported", Toast.LENGTH_SHORT).show();
             finish();
         }
+
         final BluetoothManager bluetoothManager =
                 (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
@@ -187,9 +188,7 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, AlarmReceiver.class);
         alarmIntent = PendingIntent.getBroadcast(MainActivity.this, 0, intent, 0);
 
-
     }
-
 
     /*
      * Section deals with system functions and making sure bluetooth doesn't crash during transistions
@@ -244,6 +243,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == REQUEST_ENABLE_BT) {
             if (resultCode == Activity.RESULT_CANCELED) {
                 //Bluetooth not enabled.
+                Toast.makeText(getApplicationContext(), "Bluetooth must be enabled", Toast.LENGTH_LONG);
                 finish();
                 return;
             }
