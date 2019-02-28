@@ -36,52 +36,61 @@ public class BLEService extends Service {
     private final IBinder bleBinder = new BluetoothLeBinder();
 
     //Bluetooth Objects
-    private BluetoothAdapter mBluetoothAdapter;
-    private Handler mHandler;
-    private static final long SCAN_PERIOD = 3000;
+    private BluetoothAdapter bluetoothAdapter;
+    private BluetoothManager bluetoothManager;
+    private String bluetoothDeviceAddress;
+    private BluetoothGatt bluetoothGatt;
     private ScanSettings settings;
-    private List<ScanFilter> filters;
-    private BluetoothLeScanner mLEScanner;
-    public static BluetoothGatt mGatt;
-    //public static List<BluetoothDevice> mDeviceList = new ArrayList<>();
-    public static BluetoothDevice mDevice;
-    public int mData;
+    private Handler mHandler;
+    private int connectionState = STATE_DISCONNECTED;
+
+    private static final int STATE_DISCONNECTED = 0;
+    private static final int STATE_CONNECTING = 1;
+    private static final int STATE_CONNECTED = 2;
+
+    public final static String ACTION_GATT_CONNECTED =
+            "com.example.bluetooth.le.ACTION_GATT_CONNECTED";
+    public final static String ACTION_GATT_DISCONNECTED =
+            "com.example.bluetooth.le.ACTION_GATT_DISCONNECTED";
+    public final static String ACTION_GATT_SERVICES_DISCOVERED =
+            "com.example.bluetooth.le.ACTION_GATT_SERVICES_DISCOVERED";
+    public final static String ACTION_DATA_AVAILABLE =
+            "com.example.bluetooth.le.ACTION_DATA_AVAILABLE";
+    public final static String EXTRA_DATA =
+            "com.example.bluetooth.le.EXTRA_DATA";
 
     //Characteristic Definitions
     public final static UUID STREAM_SERVICE = UUID.fromString("00035b03-58e6-07dd-021a-08123a000300");
     public final static UUID STREAM_CHARACTERISTIC = UUID.fromString("00035b03-58e6-07dd-021a-08123a000301");
     public final static UUID COMMAND_CHARACTERISTIC = UUID.fromString("00035b03-58e6-07dd-021a-08123a000301");
 
-    //Broadcast Definitions
-    public final static String ACTION_GATT_CONNECTED =
-            "gerber.benjamin.lucidio.ACTION_GATT_CONNECTED";
-    public final static String ACTION_GATT_DISCONNECTED =
-            "gerber.benjamin.lucidio.ACTION_GATT_DISCONNECTED";
-    public final static String ACTION_GATT_SERVICES_DISCOVERED =
-            "gerber.benjamin.lucidio.ACTION_GATT_SERVICES_DISCOVERED";
-    public final static String ACTION_DATA_AVAILABLE =
-            "gerber.benjamin.lucidio.ACTION_DATA_AVAILABLE";
+    private static final long SCAN_PERIOD = 3000;
 
     //Misc Objects
     public static boolean sleeping = false;
-    public int fCount;
 
-//    public boolean initialize() {
-//
-//        final BluetoothManager bluetoothManager =
-//                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-//
-//        mBluetoothAdapter = bluetoothManager.getAdapter();
-//
-//        if (mBluetoothAdapter == null){
-//            throw new NullPointerException("No Bluetooth Adapter Found");
-//        }
-//
-//        mHandler = new Handler();
-//
-//        return true;
-//    }
+    private final BluetoothGattCallback gattCallback =
+            new BluetoothGattCallback() {
+                @Override
+                public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+                    
+                }
 
+                @Override
+                public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                    super.onServicesDiscovered(gatt, status);
+                }
+
+                @Override
+                public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                    super.onCharacteristicRead(gatt, characteristic, status);
+                }
+
+                @Override
+                public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                    super.onCharacteristicWrite(gatt, characteristic, status);
+                }
+            }
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -108,9 +117,9 @@ public class BLEService extends Service {
 
         if (mGatt == null) {
             mGatt = device.connectGatt(this, false, gattCallback);
-            int state = mBluetoothAdapter.getState();
+            int state = bluetoothAdapter.getState();
             if(state == mGatt.STATE_DISCONNECTED || state == mGatt.STATE_DISCONNECTING){
-                Toast.makeText(this,"Unable to Connect", Toast.LENGTH_SHORT);
+                Toast.makeText(this,"Unable to Connect", Toast.LENGTH_SHORT).show();
                 //throw new NullPointerException("Connection Failed");
             }
             else if (state == mGatt.STATE_CONNECTED){

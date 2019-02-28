@@ -108,7 +108,7 @@ public class BleFragment extends Fragment implements View.OnClickListener{
                 scanProgressBar.setVisibility(View.VISIBLE);
 
                 /*This code uses the Handler to create a new thread while being able to retain view
-                 *compatability as opposed to a new thread. */
+                 compatibility as opposed to a new thread. */
                 Runnable r = new Runnable() {
                     @Override
                     public void run(){
