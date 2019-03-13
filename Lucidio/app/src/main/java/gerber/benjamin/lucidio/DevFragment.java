@@ -20,15 +20,16 @@ public class DevFragment extends Fragment implements View.OnClickListener{
 
     private int ledValue;
     private int tapCount;
+    private MainActivity activity;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
+        activity = (MainActivity) getActivity();
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_dev, container, false);
 
         //LED Seekbar
-        SeekBar seekBar = (SeekBar) v.findViewById(R.id.led_seek);
+        SeekBar seekBar = v.findViewById(R.id.led_seek);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -47,11 +48,10 @@ public class DevFragment extends Fragment implements View.OnClickListener{
         });
 
         //Initializing buttons
-        final ToggleButton toggleButton = (ToggleButton) v.findViewById(R.id.motor_butt);
-        final ToggleButton toggleButton1 = (ToggleButton) v.findViewById(R.id.toggle_led_3_butt);
-        final ToggleButton toggleButton2 = (ToggleButton) v.findViewById(R.id.toggle_led_4_butt);
-        Button button2 = (Button) v.findViewById(R.id.set_led_butt);
-
+        final ToggleButton toggleButton = v.findViewById(R.id.motor_butt);
+        final ToggleButton toggleButton2 =  v.findViewById(R.id.toggle_led_4_butt);
+        final ToggleButton toggleButton1 =  v.findViewById(R.id.toggle_led_3_butt);
+        Button button2 =  v.findViewById(R.id.set_led_butt);
 
         //Initiate the motor toggle button
         toggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -68,7 +68,6 @@ public class DevFragment extends Fragment implements View.OnClickListener{
             }
         });
 
-
         //Initiate the LED toggle button
         toggleButton1.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -79,7 +78,7 @@ public class DevFragment extends Fragment implements View.OnClickListener{
 
                     byte[] ledEnableCommand = new byte[] {77};
                     try{
-                        ((MainActivity)getActivity()).bleService.writeData(ledEnableCommand);
+                        activity.bleService.writeData(ledEnableCommand);
                         Thread.sleep(120); //Extra delay for sending LED value after receive cmd
                     }catch (InterruptedException e){
                         e.printStackTrace();
@@ -113,11 +112,11 @@ public class DevFragment extends Fragment implements View.OnClickListener{
 
         //Initialize Dev buttons
         button2.setOnClickListener(this);
-        final Button button3 = (Button) v.findViewById(R.id.stop_rem_butt);
-        final Button button4 = (Button) v.findViewById(R.id.start_rem_butt);
-        final Button button5 = (Button) v.findViewById(R.id.start_sleep_butt);
-        final Button button7 = (Button) v.findViewById(R.id.button_default);
-        final Button button8 = (Button) v.findViewById(R.id.stop_sleep_butt);
+        final Button button3 = v.findViewById(R.id.stop_rem_butt);
+        final Button button4 = v.findViewById(R.id.start_rem_butt);
+        final Button button5 = v.findViewById(R.id.start_sleep_butt);
+        final Button button7 = v.findViewById(R.id.button_default);
+        final Button button8 = v.findViewById(R.id.stop_sleep_butt);
         button3.setOnClickListener(this);
         button4.setOnClickListener(this);
         button5.setOnClickListener(this);
@@ -125,7 +124,7 @@ public class DevFragment extends Fragment implements View.OnClickListener{
         button8.setOnClickListener(this);
 
         //Initiate Dev button visibility check
-        Button button6 = (Button) v.findViewById(R.id.butten_dev);
+        Button button6 = v.findViewById(R.id.butten_dev);
         button6.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -162,34 +161,34 @@ public class DevFragment extends Fragment implements View.OnClickListener{
         switch (view.getId()) {
             case (R.id.stop_rem_butt):                          //Stop REM Command
                 data = new byte[]{(byte) 73};
-                ((MainActivity) getActivity()).bleService.writeData(data);
+                activity.bleService.writeData(data);
                 BLEService.sleeping = false;
                 break;
 
             case (R.id.set_led_butt):
                 MainActivity.settingsBytes[3] = (byte) ledValue;                   //LED Value 0-100
-                ((MainActivity)getActivity()).applyBrightness();
+                activity.applyBrightness();
                 data = new byte[]{(byte) 99};
                 try{
                     Thread.sleep(200);
-                    ((MainActivity)getActivity()).bleService.writeData(data);
+                    activity.bleService.writeData(data);
                 }catch (Exception e){return;}
                 break;
 
             case (R.id.start_rem_butt):
                 data = new byte[]{(byte) 74};                   //Button to kick us into REM sleep
-                ((MainActivity) getActivity()).bleService.writeData(data);
+                activity.bleService.writeData(data);
                 break;
 
             case (R.id.start_sleep_butt):                       //Sleep Button
                 data = new byte[]{(byte) 73};
-                ((MainActivity)getActivity()).bleService.writeData(data);
+                activity.bleService.writeData(data);
                 BLEService.sleeping = true;
                 break;
 
             case (R.id.stop_sleep_butt):
                 data = new byte[]{(byte) 76};
-                ((MainActivity)getActivity()).bleService.writeData(data);
+                activity.bleService.writeData(data);
                 BLEService.sleeping = false;
                 break;
 

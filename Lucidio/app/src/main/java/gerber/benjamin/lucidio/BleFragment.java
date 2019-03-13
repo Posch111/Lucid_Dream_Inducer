@@ -1,10 +1,20 @@
 package gerber.benjamin.lucidio;
+import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.opengl.Visibility;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,61 +41,31 @@ import java.util.UUID;
 
 public class BleFragment extends Fragment implements View.OnClickListener{
 
-    private ListView listView;
-    private ArrayList<String> resultList;
-    private ArrayAdapter mDeviceListAdapter;
-    private Handler mHandler;
+    private MainActivity activity;
+    private BLEService bleService;
     private ProgressBar scanProgressBar;
+    private RecyclerView scanResultsView;
     public Fragment dev = new DevFragment();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        activity = (MainActivity)getActivity();
+        bleService = activity.bleService;
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_ble, container, false);
-        mHandler = new Handler();
 
         //Initializing texts, Progress Bar, and List
-        final ListView listView = v.findViewById(R.id.scanResults);
+        scanResultsView = v.findViewById(R.id.scanResultsView);
+        LinearLayoutManager listManager = new LinearLayoutManager(activity);
+        scanResultsView.setLayoutManager(listManager);
         scanProgressBar = v.findViewById(R.id.scanProgressBar);
         scanProgressBar.setVisibility(View.INVISIBLE);
-        resultList  = new ArrayList<String>();
-        mDeviceListAdapter = new ArrayAdapter(getActivity(),android.R.layout.simple_list_item_1, resultList); //creates list adapter for viewing
-        listView.setAdapter(mDeviceListAdapter);
-        //Makes the list clickable and parses out device address
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Object deviceSelect = listView.getItemAtPosition(position);
-                String info = deviceSelect.toString();
-                boolean clicked = false;
-
-                if(info == null){
-                    BLEService.mGatt.disconnect();
-                }
-
-                if(deviceSelect.toString() == info)
-                    clicked = !clicked;
-                if(clicked)
-                    BLEService.mGatt.disconnect();
-                else
-                    info = deviceSelect.toString();
-                String address = info.substring(info.length() - 17);
-
-                for(int i = 0; i < MainActivity.mDeviceList.size(); i++){
-                    if(((MainActivity.mDeviceList.get(i).toString().contains(address)))) {
-                        MainActivity.device = MainActivity.mDeviceList.get(i);
-                        Log.i("Device", MainActivity.device.toString());
-                    }
-                }
-                ((MainActivity)getActivity()).bleService.connectToDevice(MainActivity.device);
-
-            }
-        });
-
+        scanResultsView.setAdapter(bleService.leDeviceListAdapter);
+        scanResultsView.setVisibility(View.INVISIBLE);
 
         //Initializing button
-        Button button = (Button) v.findViewById(R.id.button_scan);
-        Button button1 = (Button) v.findViewById(R.id.button_disconnect);
+        Button button = v.findViewById(R.id.button_scan);
+        Button button1 = v.findViewById(R.id.button_disconnect);
         button.setOnClickListener(this);
         button1.setOnClickListener(this);
 
@@ -93,49 +73,27 @@ public class BleFragment extends Fragment implements View.OnClickListener{
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case (R.id.button_scan):
-                //Clears scan result list
-                resultList.clear();
-                MainActivity.device = null;
-
                 //Initiates Scan and makes indeterminate progressbar visible
                 Log.i("BT", "Starting Bluetooth Scan");
-
-                Toast.makeText(getActivity(), "Scanning", Toast.LENGTH_SHORT).show();
-                ((MainActivity)getActivity()).scanLeDevice(true);
+                scanResultsView.setVisibility(View.VISIBLE);
                 scanProgressBar.setVisibility(View.VISIBLE);
+                Toast.makeText(getActivity(), "Scanning", Toast.LENGTH_SHORT).show();
 
-                /*This code uses the Handler to create a new thread while being able to retain view
-                 compatibility as opposed to a new thread. */
-                Runnable r = new Runnable() {
-                    @Override
-                    public void run(){
-                        //Creates and displays device list
-                        if(MainActivity.mDeviceList != null) {
-                            for (int i = 0; i < MainActivity.mDeviceList.size(); i++){
-                                //Log.i("Device ", "Address:"+ MainActivity.mDeviceList.get(i).getAddress()
-                                //+ " Name:" + MainActivity.mDeviceList.get(i).getName()); //Logs the device list names
-                                mDeviceListAdapter.add(MainActivity.mDeviceList.get(i).getName() +
-                                        "\n" + ((MainActivity.mDeviceList.get(i).getAddress()))); //Adds the device list to the list adapter
-                            }
-                        }
-                        mDeviceListAdapter.notifyDataSetChanged(); //Update List
-                        scanProgressBar.setVisibility(View.INVISIBLE); //Make ProgressBar hidden again
-                    }
-                };
-                mHandler.postDelayed(r, 3000); //Delays runnable by 3 seconds
+                bleService.scanLE(true);
+
                 break;
-
             case (R.id.button_disconnect):
-                if(BLEService.mGatt != null) {
-                    ((MainActivity) getActivity()).bleService.disconnectDevice();
-                }
+                bleService.disconnect();
                 break;
-
-
         }
     }
-
 }

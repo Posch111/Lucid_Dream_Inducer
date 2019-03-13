@@ -71,8 +71,10 @@ public class SleepActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sleep);
+        Intent bleServiceIntent = new Intent(this, BLEService.class);
+        bindService(bleServiceIntent, BleServiceConnection, BIND_IMPORTANT);
 
-        if (bleService.mDevice == null) {
+        if (bleService.getConnectionState() == BLEService.STATE_DISCONNECTED) {
             Toast.makeText(this, "Bluetooth Not Connected", Toast.LENGTH_SHORT).show();
             cmdrun = false;
             datarun = false;
@@ -125,7 +127,7 @@ public class SleepActivity extends AppCompatActivity {
         graph.getViewport().setMaxY(250);
 
         //Buttons
-        final Button button = findViewById(R.id.end_sleep_butt);;
+        final Button button = findViewById(R.id.end_sleep_butt);
 
         cmdrun = true;
         datarun = true;

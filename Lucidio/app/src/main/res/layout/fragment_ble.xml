@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="gerber.benjamin.lucidio.BleFragment" >
+    tools:context="gerber.benjamin.lucidio.BleFragment">
 
     <android.support.v7.widget.AppCompatButton
         android:id="@+id/button_scan"
@@ -35,8 +35,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_scan" />
 
-    <ListView
-        android:id="@+id/scanResults"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/scanResultsView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
@@ -46,8 +46,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_disconnect"
-        tools:context="gerber.benjamin.lucidio.HomeFragment" />
+        app:layout_constraintTop_toBottomOf="@+id/button_disconnect"/>
 
     <ProgressBar
         android:id="@+id/scanProgressBar"
@@ -60,3 +59,4 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>
+

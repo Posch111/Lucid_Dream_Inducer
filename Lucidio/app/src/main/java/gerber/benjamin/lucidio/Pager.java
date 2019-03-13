@@ -1,5 +1,6 @@
 package gerber.benjamin.lucidio;
 
+import android.companion.BluetoothLeDeviceFilter;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -12,6 +13,9 @@ public class Pager extends FragmentStatePagerAdapter {
 
     //integer to count number of tabs
     int tabCount;
+    /**
+     *
+     */
 
     //Constructor to the class
     public Pager(FragmentManager fm, int tabCount) {
@@ -26,14 +30,11 @@ public class Pager extends FragmentStatePagerAdapter {
         //Returning the current tabs
         switch (position) {
             case 0:
-                BleFragment tab1 = new BleFragment();
-                return tab1;
+                return new BleFragment();
             case 1:
-                HomeFragment tab2 = new HomeFragment();
-                return tab2;
+                return  new HomeFragment();
             case 2:
-                DevFragment tab3 = new DevFragment();
-                return tab3;
+                return new DevFragment();
             default:
                 return null;
         }

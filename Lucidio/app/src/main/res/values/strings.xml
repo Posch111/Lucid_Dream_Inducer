@@ -44,5 +44,6 @@
     <string name="menu_stop">Stop</string>
     <string name="title_activity_result_view">resultView</string>
     <string name="title_activity_sleep">SleepActivity</string>
+    <string name="device_name_error">#device_name</string>
 
 </resources>

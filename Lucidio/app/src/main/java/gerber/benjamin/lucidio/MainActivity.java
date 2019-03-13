@@ -3,22 +3,28 @@ package gerber.benjamin.lucidio;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.ComponentName;
+import android.content.IntentFilter;
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.strictmode.InstanceCountViolation;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v4.widget.DrawerLayout;
@@ -31,6 +37,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Environment;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -54,23 +61,32 @@ import gerber.benjamin.lucidio.BLEService.BluetoothLeBinder;
 
 public class MainActivity extends AppCompatActivity {
 
+    //Fragment Objects
+    private SettingFragment settingFragment;
+    private HomeFragment homeFragment;
+    private HelpFragment helpFragment;
+    private SleepFragment sleepFragment;
+    private CueFragment cueFragment;
+    private AlarmFragment alarmFragment;
+    private DataFragment dataFragment;
+    private BleFragment bleFragment;
+    private DevFragment devFragment;
+
     //Bluetooth Objects
     private BluetoothAdapter mBluetoothAdapter;
     private int REQUEST_ENABLE_BT = 1;
     private Handler mHandler;
     private static final long SCAN_PERIOD = 3000;
-    private BluetoothLeScanner mLEScanner;
     private ScanSettings settings;
     private List<ScanFilter> filters;
     public static List<BluetoothDevice> mDeviceList = new ArrayList<>();
     public static BluetoothDevice device;
-    BLEService bleService;
+    public BLEService bleService;
     boolean serviceBound = false;
     private boolean mConnected;
-
     //Layout Objects
     private DrawerLayout dLayout;
-    private Fragment frag = new HomeFragment(); // create a Fragment Object
+    private Fragment frag;
 
     //Data Objects
     public static ArrayList<Long>mEogDataTime = new ArrayList<>();
@@ -99,22 +115,68 @@ public class MainActivity extends AppCompatActivity {
     public static int eogLastWriteIndex = 0;
 
     //Misc Objects
-    public int mFCount;
     public final String[] PERMISSIONS = {Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE};
 
-    //Characteristic Definitions
-    public final static UUID STREAM_SERVICE = UUID.fromString("00035b03-58e6-07dd-021a-08123a000300");
-    public final static UUID STREAM_CHARACTERISTIC = UUID.fromString("00035b03-58e6-07dd-021a-08123a000301");
-    public final static UUID COMMAND_CHARACTERISTIC = UUID.fromString("00035b03-58e6-07dd-021a-08123a000301");
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        homeFragment = new HomeFragment();
+        helpFragment = new HelpFragment();
+        alarmFragment = new AlarmFragment();
+        //sleepFragment = new SleepFragment();
+        cueFragment = new CueFragment();
+        dataFragment = new DataFragment();
+        devFragment = new DevFragment();
+        bleFragment = new BleFragment();
+        settingFragment = new SettingFragment();
+
+        //Checks if BluetoothLE is a feature on this device
+        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(this, "BLE Not Supported", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+        //Requests permissions for required location services
+        if(!hasPermissions(this, PERMISSIONS)){
+            ActivityCompat.requestPermissions(this, PERMISSIONS, 1);
+        }
+
+        if(isExternalStorageWritable())
+        {
+            extWrite = true;
+            extReadOnly = false;
+        }else if(isExternalStorageReadable())
+        {
+            extReadOnly = false;
+        }
+        mHandler = new Handler();
+
+        //getting BLE service intent
+        Intent bleintent = new Intent(MainActivity.this, BLEService.class);
+        boolean success = bindService(bleintent, BleServiceConnection, Context.BIND_AUTO_CREATE);
+
+        //Initializes Navigation Drawer
+        setNavigationDrawer();
+        //Load initial Settings
+        loadSettings();
+
+        //Alarms
+        alarmMgr = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(MainActivity.this, AlarmReceiver.class);
+        alarmIntent = PendingIntent.getBroadcast(MainActivity.this, 0, intent, 0);
+
+        //setup broadcast message receiver to allow BLEservice to send messages
+        IntentFilter filter = new IntentFilter(BLEService.ACTION_GATT_SERVICES_DISCOVERED);
+         filter.addAction(BLEService.ACTION_DATA_AVAILABLE);
+         filter.addAction(BLEService.ACTION_GATT_CONNECTED);
+         filter.addAction(BLEService.ACTION_GATT_DISCONNECTED);
+         filter.addAction(BLEService.ACTION_SCAN_COMPLETE);
+         filter.addAction(BLEService.ACTION_SERVICE_BOUND);
+         registerReceiver(bleBroadcastReceiver, filter);
 
         //Initializes floating action  button and the switching to the sleep fragment on press
         final FloatingActionButton sleep_butt = (FloatingActionButton) findViewById(R.id.sleep_butt);
@@ -144,106 +206,29 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Good Night", Toast.LENGTH_SHORT).show();
             }
         });
-
-        //Requests permissions for required location services
-        if(!hasPermissions(this, PERMISSIONS)){
-            ActivityCompat.requestPermissions(this, PERMISSIONS, 1);
-        }
-
-        if(isExternalStorageWritable())
-        {
-            extWrite = true;
-            extReadOnly = false;
-        }else if(isExternalStorageReadable())
-        {
-            extReadOnly = false;
-        }
-
-
-        //Checks if BluetoothLE is a feature on this device
-        mHandler = new Handler();
-        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
-            Toast.makeText(this, "BLE Not Supported", Toast.LENGTH_SHORT).show();
-            finish();
-        }
-
-        final BluetoothManager bluetoothManager =
-                (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
-        mBluetoothAdapter = bluetoothManager.getAdapter();
-
-        //getting BLE service intent
-        Intent bleintent = new Intent(this, BLEService.class);
-        bindService(bleintent, BleServiceConnection, Context.BIND_AUTO_CREATE);
-
-        //Initializes Navigation Drawer
-        setNavigationDrawer();
-        //Sets the Default View
-        setDefaultFragment();
-
-        //Load initial Settings
-        loadSettings();
-
-        //Alarms
-        alarmMgr = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(MainActivity.this, AlarmReceiver.class);
-        alarmIntent = PendingIntent.getBroadcast(MainActivity.this, 0, intent, 0);
-
-    }
-
-    /*
-     * Section deals with system functions and making sure bluetooth doesn't crash during transistions
-     */
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        } else if (Build.VERSION.SDK_INT >= 21) {
-            mLEScanner = mBluetoothAdapter.getBluetoothLeScanner();
-            settings = new ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                    .build();
-            filters = new ArrayList<ScanFilter>();
-        } else if (device != null) {
-            bleService.connectToDevice(device);
-            Log.i("BT", "RECONNECTED_BY_RESUME");
-        }
-
-
     }
 
     //Disconnects on pause
     @Override
     protected void onPause() {
-        super.onPause();
-        if (mBluetoothAdapter != null && mBluetoothAdapter.isEnabled()) {
-            scanLeDevice(false);
-        }
         saveSettings();
+        super.onPause();
     }
 
     //Closes the gatt server on app destroy
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-
         saveSettings();
-        if (bleService.mGatt == null) {
-            return;
-        }
-        bleService.mGatt.close();
-        bleService.mGatt = null;
         super.onDestroy();
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_ENABLE_BT) {
             if (resultCode == Activity.RESULT_CANCELED) {
                 //Bluetooth not enabled.
-                Toast.makeText(getApplicationContext(), "Bluetooth must be enabled", Toast.LENGTH_LONG);
+                Toast.makeText(getApplicationContext(),
+                        "Bluetooth must be enabled", Toast.LENGTH_LONG).show();
                 finish();
                 return;
             }
@@ -254,8 +239,7 @@ public class MainActivity extends AppCompatActivity {
     /*
      *  This function sets up our bluetooth service
      */
-
-    private ServiceConnection BleServiceConnection = new ServiceConnection() {
+    public ServiceConnection BleServiceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder service) {
             BluetoothLeBinder binder = (BluetoothLeBinder) service;
@@ -264,89 +248,20 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onServiceDisconnected(ComponentName componentName) {
+        public void onServiceDisconnected(ComponentName name) {
             serviceBound = false;
+            Log.d("service: ", "service stopped");
+        }
+
+        @Override
+        public void onBindingDied(ComponentName name) {
+            serviceBound = false;
+            AlertDialog d = new AlertDialog.Builder(getApplicationContext()).create();
+            d.setTitle("BLE Service Disconneted");
+            d.show();
+            Log.d("service: ", "service stopped");
         }
     };
-
-
-    /*
-     * This Section of code deals with scanning for BLE devices
-     * and setting up the GATT server along with sending and
-     * receiving data to the BLE Device
-     */
-
-    //Handles connecting to devices on API < 21 and API > 21
-    public void scanLeDevice(final boolean enable) {
-        mDeviceList.clear();
-
-        if (enable) {
-            mHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (Build.VERSION.SDK_INT < 21) {
-                        mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                    } else {
-                        mLEScanner.stopScan(mScanCallback);
-
-                    }
-                }
-            }, SCAN_PERIOD);
-            if (Build.VERSION.SDK_INT < 21) {
-                mBluetoothAdapter.startLeScan(mLeScanCallback);
-            } else {
-                mLEScanner.startScan(filters, settings, mScanCallback);
-            }
-        } else {
-            if (Build.VERSION.SDK_INT < 21) {
-                mBluetoothAdapter.stopLeScan(mLeScanCallback);
-            } else {
-                mLEScanner.stopScan(mScanCallback);
-            }
-        }
-    }
-
-
-    //The callback handling bluetooth scanning past API > 21
-    public ScanCallback mScanCallback = new ScanCallback() {
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            //Log.i("callbackType", String.valueOf(callbackType));
-            //Log.i("result", result.toString());
-
-            BluetoothDevice btDevice = result.getDevice();
-            if (mDeviceList.contains(btDevice) == false)
-                mDeviceList.add(btDevice);
-        }
-
-        @Override
-        public void onBatchScanResults(List<ScanResult> results) {
-            for (ScanResult sr : results) {
-                Log.i("ScanResult - Results", sr.toString());
-            }
-        }
-
-        @Override
-        public void onScanFailed(int errorCode) {
-            Log.e("Scan Failed", "Error Code: " + errorCode);
-        }
-    };
-
-    ///Handled API < 21 callback from scannning
-    public BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
-                @Override
-                public void onLeScan(final BluetoothDevice device, int rssi,
-                                     byte[] scanRecord) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.i("onLeScan", device.toString());
-                            bleService.connectToDevice(device);
-                        }
-                    });
-                }
-            };
 
     // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
@@ -354,29 +269,35 @@ public class MainActivity extends AppCompatActivity {
     // ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
     // ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
     //                        or notification operations.
-    private final BroadcastReceiver mGattUpdateReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver bleBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if (bleService.ACTION_GATT_CONNECTED.equals(action)) {
-                mConnected = true;
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        //Toast.makeText(getApplicationContext(), "Bluetooth Connected", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } else if (bleService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                mConnected = false;
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        //Toast.makeText(getApplicationContext(), "Bluetooth Disconnected", Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } else if (bleService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+            if(action == null) return;
 
-            }
-            if (bleService.ACTION_DATA_AVAILABLE.equals(action)) {
-                mEogData.add(bleService.mData);
+            switch (action){
+                case BLEService.ACTION_SERVICE_BOUND:
+
+                    setDefaultFragment();
+                    break;
+                case BLEService.ACTION_GATT_CONNECTED:
+
+                    mConnected = true;
+                    break;
+                case BLEService.ACTION_GATT_DISCONNECTED:
+                    mConnected = false;
+                    break;
+                case BLEService.ACTION_GATT_SERVICES_DISCOVERED:
+                    Toast.makeText(context,
+                            "Connected to "+ bleService.bluetoothDevice.getName(),
+                            Toast.LENGTH_LONG).show();
+                    findViewById(R.id.scanResultsView).setVisibility(View.INVISIBLE);
+                    break;
+                case BLEService.ACTION_SCAN_COMPLETE:
+                    findViewById(R.id.scanProgressBar).setVisibility(View.INVISIBLE);
+                    break;
+                case BLEService.ACTION_DATA_AVAILABLE:
+                    break;
             }
         }
     };
@@ -388,48 +309,38 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setNavigationDrawer() {
 
-        Intent intent = null;
-        dLayout = (DrawerLayout) findViewById(R.id.drawer_layout); // initiate a DrawerLayout
-        NavigationView navView = (NavigationView) findViewById(R.id.navigation); // initiate a Navigation View
+        dLayout = findViewById(R.id.drawer_layout); // initiate a DrawerLayout
+        NavigationView navView = findViewById(R.id.navigation); // initiate a Navigation View
 
         // implement setNavigationItemSelectedListener event on NavigationView
         navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem menuItem) {
-
+                FragmentManager fm = getSupportFragmentManager();
+                FragmentTransaction transaction = fm.beginTransaction();
 
                 int itemId = menuItem.getItemId(); // get selected menu item's id
 
                 // check selected menu item's id and replace a Fragment Accordingly
                 if (itemId == R.id.nav_home){
-                    frag = new HomeFragment();
+                    transaction.add(R.id.frame, homeFragment, "home");
                 } else if (itemId == R.id.nav_alarms) {
-                    frag = new AlarmFragment();
+                    transaction.add(R.id.frame, alarmFragment, "alarm");
                 } else if (itemId == R.id.nav_cues) {
-                    frag = new CueFragment();
+                    transaction.add(R.id.frame, cueFragment, "cue");
                 } else if (itemId == R.id.nav_data) {
-                    frag = new DataFragment();
+                    transaction.add(R.id.frame, dataFragment, "data");
                 } else if (itemId == R.id.nav_settings){
-                    frag = new SettingFragment();
+                    transaction.add(R.id.frame, settingFragment, "setting");
                 } else if (itemId == R.id.nav_help){
-                    frag = new HelpFragment();
-                }else
-                    frag = new HomeFragment();
-
-                // display a toast message with menu item's title
-                Toast.makeText(getApplicationContext(), menuItem.getTitle(), Toast.LENGTH_SHORT).show();
-                if (frag != null) {
-                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                    //transaction.add(R.id.frame, frag);
-                    transaction.replace(R.id.frame, frag); // replace a Fragment with Frame Layout
-                    transaction.addToBackStack(null);
-                    transaction.commit(); // commit the changes
-                    dLayout.closeDrawers(); // close the all open Drawer Views
-                    return true;
+                    transaction.add(R.id.frame, helpFragment, "help");
+                }else{
+                    transaction.commit();
+                    return false;
                 }
 
-                return false;
-
+                transaction.commit();
+                return true;
             }
         });
     }
@@ -437,8 +348,8 @@ public class MainActivity extends AppCompatActivity {
     //Function sets the main fragment when the app starts
     public void setDefaultFragment() {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.frame, frag); // replace a Fragment with Frame Layout
-        transaction.commit(); // commit the changes
+        transaction.replace(R.id.frame, settingFragment, "setting"); // replace a Fragment with Frame Layout
+        transaction.commitAllowingStateLoss(); // commit the changes
     }
 
     //Alarms Section
