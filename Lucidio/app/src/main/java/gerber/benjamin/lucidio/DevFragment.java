@@ -90,6 +90,13 @@ public class DevFragment extends Fragment implements View.OnClickListener{
                     // The toggle is disabled
                     MainActivity.settingsBytes[1] = (byte) 0;
                     Log.i("CMD", "LED 3 Off");
+                    byte[] ledEnableCommand = new byte[] {77};
+                    try{
+                        activity.bleService.writeData(ledEnableCommand);
+                        Thread.sleep(120); //Extra delay for sending LED value after receive cmd
+                    }catch (InterruptedException e){
+                        e.printStackTrace();
+                    }
                 }
             }
         });
@@ -167,8 +174,8 @@ public class DevFragment extends Fragment implements View.OnClickListener{
 
             case (R.id.set_led_butt):
                 MainActivity.settingsBytes[3] = (byte) ledValue;                   //LED Value 0-100
-                activity.applyBrightness();
-                data = new byte[]{(byte) 99};
+                //activity.applyBrightness();
+                data = new byte[]{(byte) 66};
                 try{
                     Thread.sleep(200);
                     activity.bleService.writeData(data);
