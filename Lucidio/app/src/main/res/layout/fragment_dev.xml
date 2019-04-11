@@ -111,15 +111,15 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/button_default"
-        android:layout_width="150dp"
-        android:layout_height="225dp"
-        android:layout_marginBottom="64dp"
-        android:layout_marginEnd="32dp"
-        android:text="Reset to \nDefault \nSettings"
+        android:id="@+id/button_test_protocol"
+        android:layout_width="148dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="Test Protocol"
         android:visibility="invisible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/led_seek" />
 
     <ToggleButton
         android:id="@+id/toggle_led_4_butt"
@@ -131,5 +131,37 @@
         android:textOn="Right LED On"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/button_send_command"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="Send Command"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text_comand" />
+
+    <EditText
+        android:id="@+id/text_comand"
+        android:layout_width="227dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:ems="10"
+        android:inputType="textShortMessage"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button_test_protocol" />
+
+    <TextView
+        android:id="@+id/text_incoming_msg"
+        android:layout_width="59dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/stop_sleep_butt"
+        app:layout_constraintTop_toBottomOf="@+id/button_send_command" />
 
 </android.support.constraint.ConstraintLayout>

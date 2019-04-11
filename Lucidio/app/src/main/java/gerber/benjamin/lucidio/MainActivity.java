@@ -40,17 +40,22 @@ import android.os.Environment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.view.MenuItem;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -66,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
     private HomeFragment homeFragment;
     private HelpFragment helpFragment;
     private SleepFragment sleepFragment;
-    private CueFragment cueFragment;
     private AlarmFragment alarmFragment;
     private DataFragment dataFragment;
     private BleFragment bleFragment;
@@ -89,8 +93,8 @@ public class MainActivity extends AppCompatActivity {
     private Fragment frag;
 
     //Data Objects
-    public static ArrayList<Long>mEogDataTime = new ArrayList<>();
-    public static ArrayList<Integer>mEogData = new ArrayList<>();
+    public  ArrayList<Long>mEogDataTime = new ArrayList<>();
+    public  ArrayList<Integer>mEogData = new ArrayList<>();
     public static Calendar calendar = Calendar.getInstance();
     public static Date currentLocalTime = calendar.getTime();
     public static final DateFormat timeFormatter = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault());
@@ -129,7 +133,6 @@ public class MainActivity extends AppCompatActivity {
         helpFragment = new HelpFragment();
         alarmFragment = new AlarmFragment();
         //sleepFragment = new SleepFragment();
-        cueFragment = new CueFragment();
         dataFragment = new DataFragment();
         devFragment = new DevFragment();
         bleFragment = new BleFragment();
@@ -176,33 +179,30 @@ public class MainActivity extends AppCompatActivity {
          filter.addAction(BLEService.ACTION_GATT_DISCONNECTED);
          filter.addAction(BLEService.ACTION_SCAN_COMPLETE);
          filter.addAction(BLEService.ACTION_SERVICE_BOUND);
-         registerReceiver(bleBroadcastReceiver, filter);
+         filter.addAction(BLEService.ACTION_MLDP_NOT_FOUND);
+        registerReceiver(bleBroadcastReceiver, filter);
 
         //Initializes floating action  button and the switching to the sleep fragment on press
         final FloatingActionButton sleep_butt = (FloatingActionButton) findViewById(R.id.sleep_butt);
         sleep_butt.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-                applyBrightness();
                 try{
                     byte[] data = new byte[] {(byte) 73};
-                    bleService.writeData(data);
+                    bleService.writeMLDP(data);
                     Thread.sleep(120);
-                    data[0] = (byte) 74;
-                    bleService.writeData(data);
+//                    data[0] = (byte) 74;
+//                    bleService.writeData(data);
                     Thread.sleep(120);
                 }catch(InterruptedException e){
                     e.printStackTrace();
                 }
 
-                Intent myIntent = new Intent(MainActivity.this, SleepActivity.class);
-                myIntent.putExtra("Device", device); //Optional parameters
-                MainActivity.this.startActivity(myIntent);
-                /*FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
                 Fragment sleepfrag = new SleepFragment();
                 transaction.replace(R.id.frame, sleepfrag); // replace a Fragment with Frame Layout
                 transaction.addToBackStack(null);
-                transaction.commit(); // commit the changes*/
+                transaction.commit(); // commit the changes
                 Toast.makeText(getApplicationContext(), "Good Night", Toast.LENGTH_SHORT).show();
             }
         });
@@ -219,6 +219,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         saveSettings();
+        unregisterReceiver(bleBroadcastReceiver);
+        unbindService(BleServiceConnection);
         super.onDestroy();
     }
 
@@ -281,22 +283,44 @@ public class MainActivity extends AppCompatActivity {
                     setDefaultFragment();
                     break;
                 case BLEService.ACTION_GATT_CONNECTED:
-
-                    mConnected = true;
-                    break;
-                case BLEService.ACTION_GATT_DISCONNECTED:
-                    mConnected = false;
-                    break;
-                case BLEService.ACTION_GATT_SERVICES_DISCOVERED:
                     Toast.makeText(context,
                             "Connected to "+ bleService.bluetoothDevice.getName(),
                             Toast.LENGTH_LONG).show();
                     findViewById(R.id.scanResultsView).setVisibility(View.INVISIBLE);
+                    mConnected = true;
+                    break;
+                case BLEService.ACTION_GATT_DISCONNECTED:
+                    Toast.makeText(context, "Disconnected from BLE device", Toast.LENGTH_SHORT).show();
+                    mConnected = false;
+                    break;
+                case BLEService.ACTION_GATT_SERVICES_DISCOVERED:
                     break;
                 case BLEService.ACTION_SCAN_COMPLETE:
-                    findViewById(R.id.scanProgressBar).setVisibility(View.INVISIBLE);
+
+                    ProgressBar progressBar = findViewById(R.id.scanProgressBar);
+                    if(progressBar != null ){
+                        progressBar.setVisibility(View.INVISIBLE);
+                    }
                     break;
                 case BLEService.ACTION_DATA_AVAILABLE:
+                    TextView incomingTextView = findViewById(R.id.text_incoming_msg);
+                    TextView incomingSleepModeDataView = findViewById(R.id.data_text_view);
+                    String data = intent.getStringExtra(BLEService.INTENT_EXTRA_SERVICE_DATA);
+                    if((data != null)){
+                        if(incomingSleepModeDataView != null){
+                            incomingSleepModeDataView.setText(data);
+                        }
+                        if(incomingTextView != null) {
+                            incomingTextView.setText(data);
+                        }
+                        if(BLEService.sleeping){
+
+                            mEogData.add(Integer.valueOf(data));
+                            mEogDataTime.add(System.currentTimeMillis());
+                        }
+
+                    }
+
                     break;
             }
         }
@@ -327,7 +351,6 @@ public class MainActivity extends AppCompatActivity {
                 } else if (itemId == R.id.nav_alarms) {
                     transaction.add(R.id.frame, alarmFragment, "alarm");
                 } else if (itemId == R.id.nav_cues) {
-                    transaction.add(R.id.frame, cueFragment, "cue");
                 } else if (itemId == R.id.nav_data) {
                     transaction.add(R.id.frame, dataFragment, "data");
                 } else if (itemId == R.id.nav_settings){
@@ -442,9 +465,9 @@ public class MainActivity extends AppCompatActivity {
             byte[] ledset = new byte[]{(byte) 68};                                  //Set LED cmd
 
             try{
-                bleService.writeData(ledset);
+                bleService.writeMLDP(ledset);
                 Thread.sleep(120); //Extra delay for sending LED value after receive cmd
-                bleService.writeData(data);
+                bleService.writeMLDP(data);
                 Thread.sleep(120);
             }catch (InterruptedException e){
                 e.printStackTrace();
@@ -460,8 +483,7 @@ public class MainActivity extends AppCompatActivity {
         Log.i("STORAGE", fullDir + filename);
         ArrayList<Long>mEogDataTimeWrite = new ArrayList<>();                                       //Temp data set array
         ArrayList<Integer>mEogDataWrite = new ArrayList<>();                                        //
-        int eogSize = mEogData.size() - 1;                                                          //Current array size
-        int eogSizeRel = (mEogData.size() - 1) - eogLastWriteIndex;
+        int eogSize = mEogData.size() - 1;
 
         for(int i = eogLastWriteIndex; i < eogSize; i++){                                           //Build temp arrays
             mEogDataTimeWrite.add(mEogDataTime.get(i));                                             //to log last chunk of
@@ -472,10 +494,10 @@ public class MainActivity extends AppCompatActivity {
         try {
                 OutputStreamWriter outputStreamWriter =
                         new OutputStreamWriter(new FileOutputStream(new File(fullDir, filename)));
-            for(int i = 0; i < eogSizeRel; i++){
+            for(int i = 0; i < eogSize; i++){
                 String streamLine;
                 streamLine = mEogDataTime.get(i) + "," + mEogDataWrite.get(i) + "\n";
-                //Log.i("STORAGE", streamLine + "iteration:" + String.valueOf(i));
+                Log.i("STORAGE", streamLine + "iteration:" + String.valueOf(i));
                 outputStreamWriter.write(streamLine);
 
             }
@@ -485,7 +507,6 @@ public class MainActivity extends AppCompatActivity {
             Log.i("STORAGE", "EOG data not successfully saved");
             return false;
         }
-        eogLastWriteIndex = eogSize;
         Log.i("STORAGE", "EOG data saved");
         return true;
     }
@@ -534,5 +555,33 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return true;
+    }
+
+    public static byte[] decodeHexString(String hexString) {
+        if (hexString.length() % 2 == 1) {
+            throw new IllegalArgumentException(
+                    "Invalid hexadecimal String supplied.");
+        }
+
+        byte[] bytes = new byte[hexString.length() / 2];
+        for (int i = 0; i < hexString.length(); i += 2) {
+            bytes[i / 2] = hexToByte(hexString.substring(i, i + 2));
+        }
+        return bytes;
+    }
+
+    static public byte hexToByte(String hexString) {
+        int firstDigit = toDigit(hexString.charAt(0));
+        int secondDigit = toDigit(hexString.charAt(1));
+        return (byte) ((firstDigit << 4) + secondDigit);
+    }
+
+    static private int toDigit(char hexChar) {
+        int digit = Character.digit(hexChar, 16);
+        if(digit == -1) {
+            throw new IllegalArgumentException(
+                    "Invalid Hexadecimal Character: "+ hexChar);
+        }
+        return digit;
     }
 }

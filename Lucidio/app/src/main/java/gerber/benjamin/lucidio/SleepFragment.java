@@ -18,10 +18,13 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 
 public class SleepFragment extends Fragment implements View.OnClickListener{
 
-
     private final Handler mHandler = new Handler();
     private Runnable mTimer;
     private LineGraphSeries<DataPoint> mSeries;
+    private MainActivity activity;
+    private BLEService bleService;
+    private boolean streamData = false;
+    private boolean cmdrun = false;
 
     //Bluetooth Commands to MSP430 system
     private byte[] motorOn = new byte[]{0x45};
@@ -36,28 +39,29 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_sleep, container, false);
-
-        if (MainActivity.device == null) {
+        activity = (MainActivity)getActivity();
+        bleService = activity.bleService;
+        if (bleService.getConnectionState() == BLEService.STATE_DISCONNECTED) {
             Toast.makeText(getActivity(), "Bluetooth Not Connected", Toast.LENGTH_SHORT).show();
-            SleepActivity.cmdrun = false;
-            SleepActivity.datarun = false;
+            cmdrun = false;
+            streamData = false;
             try{
                 Thread.sleep(1000);
             }catch(InterruptedException e){
                 e.printStackTrace();
             }
-            Fragment frag = new BleFragment();
+            Fragment frag = new SettingFragment();
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
             transaction.replace(R.id.frame, frag); // replace a Fragment with Frame Layout
             transaction.commit(); // commit the changes
         }
 
         //Initializes an dummy array for the creation of the graph (array will be offset by 1920)
-        for (int i = 0; i < 1920; i++) {
-            MainActivity.currentLocalTime.getTime();
-            MainActivity.mEogDataTime.add(System.currentTimeMillis());
-            MainActivity.mEogData.add(i, 150);
-        }
+//        for (int i = 0; i < 1920; i++) {
+//            MainActivity.currentLocalTime.getTime();
+//            activity.mEogDataTime.add(System.currentTimeMillis());
+//            activity.mEogData.add(i, 150);
+//        }
         //Initialize data streaming
         BLEService.sleeping = true;
 
@@ -87,19 +91,18 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
 
         // set manual Y bounds
         graph.getViewport().setYAxisBoundsManual(true);
-        graph.getViewport().setMinY(0);
+        graph.getViewport().setMinY(-250);
         graph.getViewport().setMaxY(250);
 
         //BUttons
-        final Button button = (Button) v.findViewById(R.id.end_sleep_butt);
+        final Button button =  v.findViewById(R.id.end_sleep_butt);
         button.setOnClickListener(this);
 
-        SleepActivity.cmdrun = true;
-        SleepActivity.datarun = true;
+        cmdrun = true;
+        streamData = true;
 
         return v;
     }
-
 
     @Override
     public void onResume() {
@@ -108,17 +111,18 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
         mTimer = new Runnable() {
             @Override
             public void run() {
-                mSeries.appendData(new DataPoint(((MainActivity) getActivity()).mEogDataTime.get(
-                        ((MainActivity) getActivity()).mEogDataTime.size() - 1),
-                        ((MainActivity) getActivity()).mEogData.get(
-                                ((MainActivity) getActivity()).mEogData.size() - 1)), true, 1920);
+                mSeries.appendData(new DataPoint(activity.mEogDataTime.get(
+                        activity.mEogDataTime.size() - 1),
+                        activity.mEogData.get(
+                                activity.mEogData.size() - 1)), true, 1920);
                 mHandler.postDelayed(this, 100);
             }
         };
         mHandler.postDelayed(mTimer, 1000);
 
-            new Thread(new dataRunnable()).start();
-            new Thread(new cmdRunnable()).start();
+            new Thread(new dataSaveRunnable()).start();
+            //new Thread(new dataReceiveRunnable()).start();
+            //new Thread(new cmdRunnable()).start();
 
     }
 
@@ -133,22 +137,22 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
     public void onClick(View view) {
         switch(view.getId()) {
             case (R.id.end_sleep_butt):
-                SleepActivity.cmdrun = false;
-                SleepActivity.datarun = false;
+                streamData = false;
                 byte[] data = new byte[] {(byte)75};
-                ((MainActivity)getActivity()).bleService.writeData(data);
+                bleService.writeMLDP(data);
                 try{
                     Thread.sleep(150);
                 }catch(InterruptedException e){
                     e.printStackTrace();
                 }
-                data[0] = (byte)76;
-                ((MainActivity)getActivity()).bleService.writeData(data);
+                data[0] = (byte)73;
+                bleService.writeMLDP(data);
                 BLEService.sleeping = false;
-                Fragment frag = new DataFragment();
+                Fragment frag = new SettingFragment();
                 FragmentTransaction transaction = getFragmentManager().beginTransaction();
                 transaction.replace(R.id.frame, frag); // replace a Fragment with Frame Layout
                 transaction.commit(); // commit the changes
+                Toast.makeText(activity, "Good Morning", Toast.LENGTH_SHORT).show();
             break;
         }
     }
@@ -157,38 +161,45 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
      * Separate Thread tasks
      */
 
-    public class dataRunnable implements Runnable {
+    public class dataSaveRunnable implements Runnable {
         public void run(){
-            while (SleepActivity.datarun) {
-                while (!Thread.currentThread().isInterrupted()) {
-                    ((MainActivity) getActivity()).saveEogData();
+            while (streamData)
+
+
                     try{
-                        Thread.sleep(5000);
+                        Thread.sleep(10000);
+                        activity.saveEogData();
                     }catch (InterruptedException e){
                         e.printStackTrace();
                     }
-                }
+
             }
-        }
+
     }
+    public class dataReceiveRunnable implements  Runnable {
+        public void run(){
+            while(streamData)
+            {
+            }
+    }}
 
     public class cmdRunnable implements Runnable {
         public void run() {
-            while (SleepActivity.cmdrun) {
+            while (cmdrun) {
                 while (!Thread.currentThread().isInterrupted()) {
                     // do something in the loop
                     try {
-                        ((MainActivity) getActivity()).bleService.writeData(motorOn);
+                        bleService.writeMLDP(motorOn);
                         Thread.sleep(333);
-                        ((MainActivity) getActivity()).bleService.writeData(led3On);
+                        bleService.writeMLDP(led3On);
                         Thread.sleep(333);
-                        ((MainActivity) getActivity()).bleService.writeData(led4On);
+                        bleService.writeMLDP(led4On);
                         Thread.sleep(333);
-                        ((MainActivity) getActivity()).bleService.writeData(motorOff);
+                        bleService.writeMLDP(motorOff);
                         Thread.sleep(333);
-                        ((MainActivity) getActivity()).bleService.writeData(led3Off);
+                        bleService.writeMLDP(led3Off);
                         Thread.sleep(333);
-                        ((MainActivity) getActivity()).bleService.writeData(led4Off);
+                        bleService.writeMLDP(led4Off);
                         Thread.sleep(333);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
