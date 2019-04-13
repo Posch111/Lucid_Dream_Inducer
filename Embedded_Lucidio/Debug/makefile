@@ -120,34 +120,34 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXE_OUTPUTS += \
-REM_Sleep_Cycle.out \
+Embedded_Code.out \
 
 EXE_OUTPUTS__QUOTED += \
-"REM_Sleep_Cycle.out" \
+"Embedded_Code.out" \
 
 BIN_OUTPUTS += \
-REM_Sleep_Cycle.hex \
+Embedded_Code.hex \
 
 BIN_OUTPUTS__QUOTED += \
-"REM_Sleep_Cycle.hex" \
+"Embedded_Code.hex" \
 
 
 # All Target
 all: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
-	@$(MAKE) --no-print-directory -Onone "REM_Sleep_Cycle.out"
+	@$(MAKE) --no-print-directory -Onone "Embedded_Code.out"
 
 # Tool invocations
-REM_Sleep_Cycle.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
+Embedded_Code.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: "$@"'
 	@echo 'Invoking: MSP430 Linker'
-	"C:/ti/ccsv8/tools/compiler/ti-cgt-msp430_18.1.4.LTS/bin/cl430" -vmsp --use_hw_mpy=none --advice:power=all --define=__MSP430G2553__ -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number -z -m"REM_Sleep_Cycle.map" --heap_size=80 --stack_size=80 -i"C:/ti/ccsv8/ccs_base/msp430/include" -i"C:/ti/ccsv8/tools/compiler/ti-cgt-msp430_18.1.4.LTS/lib" -i"C:/ti/ccsv8/tools/compiler/ti-cgt-msp430_18.1.4.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="REM_Sleep_Cycle_linkInfo.xml" --use_hw_mpy=none --rom_model -o "REM_Sleep_Cycle.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv8/tools/compiler/ti-cgt-msp430_18.1.4.LTS/bin/cl430" -vmsp --use_hw_mpy=none --advice:power=all --define=__MSP430G2553__ -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number -z -m"Embedded_Code.map" --heap_size=80 --stack_size=80 -i"C:/ti/ccsv8/ccs_base/msp430/include" -i"C:/ti/ccsv8/tools/compiler/ti-cgt-msp430_18.1.4.LTS/lib" -i"C:/ti/ccsv8/tools/compiler/ti-cgt-msp430_18.1.4.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="Embedded_Code_linkInfo.xml" --use_hw_mpy=none --rom_model -o "Embedded_Code.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: "$@"'
 	@echo ' '
 
-REM_Sleep_Cycle.hex: $(EXE_OUTPUTS)
+Embedded_Code.hex: $(EXE_OUTPUTS)
 	@echo 'Building files: $(strip $(EXE_OUTPUTS__QUOTED))'
 	@echo 'Invoking: MSP430 Hex Utility'
-	"C:/ti/ccsv8/tools/compiler/ti-cgt-msp430_18.1.4.LTS/bin/hex430" --memwidth=8 --romwidth=8 -o "REM_Sleep_Cycle.hex" $(EXE_OUTPUTS__QUOTED)
+	"C:/ti/ccsv8/tools/compiler/ti-cgt-msp430_18.1.4.LTS/bin/hex430" --memwidth=8 --romwidth=8 -o "Embedded_Code.hex" $(EXE_OUTPUTS__QUOTED)
 	@echo 'Finished building: $(strip $(EXE_OUTPUTS__QUOTED))'
 	@echo ' '
 

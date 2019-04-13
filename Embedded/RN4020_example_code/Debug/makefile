@@ -4,7 +4,7 @@
 
 SHELL = cmd.exe
 
-CG_TOOL_ROOT := C:/ti/ccsv7/tools/compiler/ti-cgt-msp430_16.9.4.LTS
+CG_TOOL_ROOT := C:/ti/ccsv8/tools/compiler/ti-cgt-msp430_18.1.4.LTS
 
 GEN_OPTS__FLAG := 
 GEN_CMDS__FLAG := 
@@ -138,16 +138,17 @@ all: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 
 # Tool invocations
 RN4020_example_code.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
-	@echo 'Building target: $@'
+	@echo 'Building target: "$@"'
 	@echo 'Invoking: MSP430 Linker'
-	"C:/ti/ccsv7/tools/compiler/ti-cgt-msp430_16.9.4.LTS/bin/cl430" -vmsp --use_hw_mpy=none --advice:power=all --define=__MSP430G2553__ -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number -z -m"RN4020_example_code.map" --heap_size=80 --stack_size=80 -i"C:/ti/ccsv7/ccs_base/msp430/include" -i"C:/ti/ccsv7/tools/compiler/ti-cgt-msp430_16.9.4.LTS/lib" -i"C:/ti/ccsv7/tools/compiler/ti-cgt-msp430_16.9.4.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="RN4020_example_code_linkInfo.xml" --use_hw_mpy=none --rom_model -o "RN4020_example_code.out" $(ORDERED_OBJS)
-	@echo 'Finished building target: $@'
+	"C:/ti/ccsv8/tools/compiler/ti-cgt-msp430_18.1.4.LTS/bin/cl430" -vmsp --use_hw_mpy=none --advice:power=all --define=__MSP430G2553__ -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number -z -m"RN4020_example_code.map" --heap_size=80 --stack_size=80 -i"C:/ti/ccsv8/ccs_base/msp430/include" -i"C:/ti/ccsv8/tools/compiler/ti-cgt-msp430_18.1.4.LTS/lib" -i"C:/ti/ccsv8/tools/compiler/ti-cgt-msp430_18.1.4.LTS/include" --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="RN4020_example_code_linkInfo.xml" --use_hw_mpy=none --rom_model -o "RN4020_example_code.out" $(ORDERED_OBJS)
+	@echo 'Finished building target: "$@"'
 	@echo ' '
 
 RN4020_example_code.hex: $(EXE_OUTPUTS)
+	@echo 'Building files: $(strip $(EXE_OUTPUTS__QUOTED))'
 	@echo 'Invoking: MSP430 Hex Utility'
-	"C:/ti/ccsv7/tools/compiler/ti-cgt-msp430_16.9.4.LTS/bin/hex430" --memwidth=8 --romwidth=8 -o "RN4020_example_code.hex" $(EXE_OUTPUTS__QUOTED)
-	@echo 'Finished building: $@'
+	"C:/ti/ccsv8/tools/compiler/ti-cgt-msp430_18.1.4.LTS/bin/hex430" --memwidth=8 --romwidth=8 -o "RN4020_example_code.hex" $(EXE_OUTPUTS__QUOTED)
+	@echo 'Finished building: $(strip $(EXE_OUTPUTS__QUOTED))'
 	@echo ' '
 
 # Other Targets

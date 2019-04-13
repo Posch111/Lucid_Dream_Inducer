@@ -22,17 +22,23 @@ volatile int freq_state;
 int timer_count = 0;
 const unsigned long int unit_length = 100000; //unit length for Morse Code signal, 1000 cycles = 1ms
 
-//    void sendUart(*char string, int length){
-//
-//
-//    };
+    void sendUart(unsigned *char string, int length){
+        if(string != null){
+            while(lenth--){
+                while(!(IFG2 & UCA0TXIFG));
+                UCA0TXBUF = *string;
+                i--;
+                string++;
+            }
+        }
+    };
 
-    int checkBLEReadyForData(){
+    int BLEReadyForData(){
         if((P2DIR & BIT3) == 1){     //if pin 2.3 is set to 1 (output mode),
             P2DIR &= BIT3;           //set pin 2.3 to input mode
         }
 
-        if((P2IN & BIT3) == BIT3){ //check Clear to Send pin 2.3 input is high
+        if((P2IN & BIT3) == BIT3){ //check CTS pin 2.3 is high
             return 1;
         }
         else return 0;
@@ -42,7 +48,7 @@ const unsigned long int unit_length = 100000; //unit length for Morse Code signa
 int main(void)
 {
 
-     //WDTCTL = WDTPW | WDTHOLD;         // stop watchdog timer
+      WDTCTL = WDTPW | WDTHOLD;         // stop watchdog timer
 
 //    //----------------Configure Timer_A0----------------------//
 //    TACCTL0 = CCIE;
@@ -54,23 +60,22 @@ int main(void)
 //    TA1CCR0 = 100; //period
 //    TA1CCR1 = 0; //duty cycle, meaning TA1CCR1 has to be less than or equal to TA1CCR0
 //    TA1CTL = TASSEL_2 + MC_1;
-//
-//    //------------------- Configure the Clocks -------------------//
-//    DCOCTL  = 0;                       // Select lowest DCOx and MODx settings
-//    BCSCTL1 = CALBC1_1MHZ;             // Set range
-//    DCOCTL  = CALDCO_1MHZ;             // Set DCO step + modulation
+
+    //------------------- Configure the Clocks -------------------//
+    BCSCTL1 = CALBC1_1MHZ;             // Set range
+    DCOCTL  = CALDCO_1MHZ;             // Set DCO step + modulation
 
     //------------------- Configure pins--------------------------//
     P1OUT &= 0x00;                          //clear P1OUT
     P2DIR &= 0x00;                          //clear P2DIR
     P1SEL  |=  BIT1 + BIT2;                 // P1.1 UCA0RXD input
     P1SEL2 |=  BIT1 + BIT2;                 // P1.2 UCA0TXD output
-    P1DIR  |=  BIT3 + BIT4 + BIT6 + BIT7 ;  //P1.3,1.4,1.7 set as outputs
+    P1DIR  |=  BIT3 + BIT4 + BIT6;           //P1.3,1.4,1.6 set as outputs (LED1,LED2,WAKE_SW)
     P1DIR  &=  ~(BIT0 + BIT5);               //P1.0,1.5 set as input
     P2DIR &= ~(BIT1 + BIT2);                //P2.1 and 2.2 set as outputs (turned off by default)
     //P2DIR |= BIT0;                        //mldp bit to High>?
     //P2SEL |= BIT1 + BIT2;                 //P2.1 and 2.2 set for PWM (Comment out to control LEDs normally)
-    P1OUT |= BIT4;                          //set wake_sw high on RN4020 (active mode)
+    P1OUT |= BIT3 + BIT4 + BIT6;                          //set wake_sw high on RN4020 (active mode)
 
 //    //--------------------Configure ADC--------------------------//
 //    ADC10CTL0 &= ~ENC; //disabled to allow modification
@@ -80,25 +85,26 @@ int main(void)
 
     //------------ Configuring the UART(USCI_A0) -----------------//
 
-//    UCA0RXE0 = 1;                          //enable uart RX
-//    UCA0TXE0 = 1;                          //enable uart TX
-    UCA0CTL1 |=  UCSSEL_2 + UCSWRST + BIT4;  // USCI Clock = SMCLK,USCI_A0 disabled, 8-bit data mode
-    UCA0BR0   =  104;                 // 104 From datasheet table
-    UCA0BR1   =  0;                   // -selects baudrate =9600bps,clk = SMCLK
-    UCA0MCTL  =  UCBRS_1;             // Modulation value = 1 from datasheet
+
+    UCA0CTL1 |=  UCSWRST + UCSSEL_2;  // USCI Clock = SMCLK,USCI_A0 disabled
+    UCA0CTL0 |= BIT4;  // 8-bit data mode
+    UCA0BR0   =  8;                 //From datasheet table
+    UCA0BR1   =  0;                   // -selects baudrate =115200 bps,clk = SMCLK
+    UCA0MCTL  = BIT3 + BIT2;             // from datasheet
     UCA0CTL1 &= ~UCSWRST;             // Clear UCSWRST to enable USCI_A0
 
 //    //---------------- Enabling the interrupts ------------------//
-//
-    IE2 |= UCA0TXIE;
-    IE2 |= UCA0RXIE;                  // Enable uart Rx interrupt
-    _BIS_SR(GIE);                     // Enable the global interrupt
 
-
-
+    //IE2 |= UCA0TXIE;                  //enable uart TX interrupt
+    IE2 |= UCA0RXIE;                  // Enable uart RX interrupt
+    _BIS_SR(GIE);
+    __enable_interrupt();           // Enable the global interrupt
+    unsigned char nameCommand[] = "SN,Lucidio\r";
     while(1){
-        //sendUart()
-        delay_cycles(10000);
+        sendUart(nameCommand, 11);
+       __delay_cycles(10000);
+       sendUart("R,1\r", 4);
+       break;
     }
 }
 

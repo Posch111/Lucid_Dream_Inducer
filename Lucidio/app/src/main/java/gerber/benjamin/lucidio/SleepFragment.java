@@ -16,7 +16,7 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-public class SleepFragment extends Fragment implements View.OnClickListener{
+public class SleepFragment extends Fragment implements View.OnClickListener {
 
     private final Handler mHandler = new Handler();
     private Runnable mTimer;
@@ -39,15 +39,15 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_sleep, container, false);
-        activity = (MainActivity)getActivity();
+        activity = (MainActivity) getActivity();
         bleService = activity.bleService;
         if (bleService.getConnectionState() == BLEService.STATE_DISCONNECTED) {
             Toast.makeText(getActivity(), "Bluetooth Not Connected", Toast.LENGTH_SHORT).show();
             cmdrun = false;
             streamData = false;
-            try{
+            try {
                 Thread.sleep(1000);
-            }catch(InterruptedException e){
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             Fragment frag = new SettingFragment();
@@ -95,36 +95,42 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
         graph.getViewport().setMaxY(250);
 
         //BUttons
-        final Button button =  v.findViewById(R.id.end_sleep_butt);
+        final Button button = v.findViewById(R.id.end_sleep_butt);
         button.setOnClickListener(this);
 
         cmdrun = true;
         streamData = true;
 
+        activity.mEogData.clear();
+        activity.mEogDataTime.clear();
         return v;
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        if (activity.mEogData.size() == 0) {
+            activity.mEogData.add(0);
+            activity.mEogDataTime.add((long) 0);
+        }
 
-        mTimer = new Runnable() {
-            @Override
-            public void run() {
-                mSeries.appendData(new DataPoint(activity.mEogDataTime.get(
-                        activity.mEogDataTime.size() - 1),
-                        activity.mEogData.get(
-                                activity.mEogData.size() - 1)), true, 1920);
-                mHandler.postDelayed(this, 100);
-            }
-        };
-        mHandler.postDelayed(mTimer, 1000);
+            mTimer = new Runnable() {
+                @Override
+                public void run() {
+                    mSeries.appendData(new DataPoint(activity.mEogDataTime.get(
+                            activity.mEogDataTime.size() - 1),
+                            activity.mEogData.get(
+                                    activity.mEogData.size() - 1)), true, 1920);
+                    mHandler.postDelayed(this, 100);
+                }
+            };
+            mHandler.postDelayed(mTimer, 1000);
 
             new Thread(new dataSaveRunnable()).start();
             //new Thread(new dataReceiveRunnable()).start();
             //new Thread(new cmdRunnable()).start();
-
     }
+
 
     @Override
     public void onPause() {
@@ -137,7 +143,6 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
     public void onClick(View view) {
         switch(view.getId()) {
             case (R.id.end_sleep_butt):
-                streamData = false;
                 byte[] data = new byte[] {(byte)75};
                 bleService.writeMLDP(data);
                 try{
@@ -163,7 +168,7 @@ public class SleepFragment extends Fragment implements View.OnClickListener{
 
     public class dataSaveRunnable implements Runnable {
         public void run(){
-            while (streamData)
+            while (BLEService.sleeping)
 
 
                     try{

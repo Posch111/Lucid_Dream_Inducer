@@ -305,22 +305,22 @@ public class MainActivity extends AppCompatActivity {
                 case BLEService.ACTION_DATA_AVAILABLE:
                     TextView incomingTextView = findViewById(R.id.text_incoming_msg);
                     TextView incomingSleepModeDataView = findViewById(R.id.data_text_view);
-                    String data = intent.getStringExtra(BLEService.INTENT_EXTRA_SERVICE_DATA);
+                    byte[] data = intent.getByteArrayExtra(BLEService.INTENT_EXTRA_SERVICE_DATA);
+
                     if((data != null)){
                         if(incomingSleepModeDataView != null){
-                            incomingSleepModeDataView.setText(data);
+                            incomingSleepModeDataView.setText(Arrays.toString(data));
                         }
                         if(incomingTextView != null) {
-                            incomingTextView.setText(data);
+                            incomingTextView.setText(Arrays.toString(data));
                         }
                         if(BLEService.sleeping){
-
-                            mEogData.add(Integer.valueOf(data));
-                            mEogDataTime.add(System.currentTimeMillis());
+                            for (byte aData : data) {
+                                mEogData.add((int) aData);
+                                mEogDataTime.add((long) mEogDataTime.size());
+                            }
                         }
-
                     }
-
                     break;
             }
         }
@@ -479,25 +479,17 @@ public class MainActivity extends AppCompatActivity {
 
         String dateStamp = dateFormatter.format(currentLocalTime);
         String filename = "Sleep_data_" + dateStamp.replace("/" ,"_") + ".csv";  //Datestamped Filename
-        String fullDir = getFullDir().getAbsolutePath().toString();                                 //Get Filepath
+        String fullDir = getFullDir().getAbsolutePath();                               //Get Filepath
         Log.i("STORAGE", fullDir + filename);
-        ArrayList<Long>mEogDataTimeWrite = new ArrayList<>();                                       //Temp data set array
-        ArrayList<Integer>mEogDataWrite = new ArrayList<>();                                        //
-        int eogSize = mEogData.size() - 1;
-
-        for(int i = eogLastWriteIndex; i < eogSize; i++){                                           //Build temp arrays
-            mEogDataTimeWrite.add(mEogDataTime.get(i));                                             //to log last chunk of
-            mEogDataWrite.add(mEogData.get(i));                                                     //data since last call
-        }
 
         //Uses OutputStreamWriter to print a csv format data set of type <timestamp>,<data>
         try {
                 OutputStreamWriter outputStreamWriter =
                         new OutputStreamWriter(new FileOutputStream(new File(fullDir, filename)));
-            for(int i = 0; i < eogSize; i++){
+            for(int i = 0; i < mEogData.size(); i++){
                 String streamLine;
-                streamLine = mEogDataTime.get(i) + "," + mEogDataWrite.get(i) + "\n";
-                Log.i("STORAGE", streamLine + "iteration:" + String.valueOf(i));
+                streamLine = mEogDataTime.get(i) + "," + mEogData.get(i) + "\n";
+                //Log.i("STORAGE", streamLine + "iteration:" + String.valueOf(i));
                 outputStreamWriter.write(streamLine);
 
             }

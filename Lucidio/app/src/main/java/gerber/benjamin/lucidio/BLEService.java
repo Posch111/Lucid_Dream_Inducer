@@ -270,21 +270,20 @@ public class BLEService extends Service {
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             try {
                 if (UUID_MLDP_DATA_PRIVATE_CHAR.equals(characteristic.getUuid()) || UUID_TRANSPARENT_TX_PRIVATE_CHAR.equals(characteristic.getUuid())) {                     //See if it is the MLDP data characteristic
-                    byte[] data = characteristic.getValue();                       //Get the data in string format
-                    //byte[] dataValue = characteristic.getValue();                                     //Example of getting data in a byte array
-                    String value = data.toString();
-                    Log.d(TAG, "Data :" + value);
+                    byte[] data = characteristic.getValue();                                            //Example of getting data in a byte array
+                    //String value = data.toString();s
+                    Log.d(TAG, "Data :" + Arrays.toString(data));
                     final Intent intent = new Intent(BLEService.ACTION_DATA_AVAILABLE);                         //Create the intent to announce the new data
-                    intent.putExtra(INTENT_EXTRA_SERVICE_DATA, value);                              //Add the data to the intent
+                    intent.putExtra(INTENT_EXTRA_SERVICE_DATA, data);                              //Add the data to the intent
                     sendBroadcast(intent);                                                              //Broadcast the intent
                 }
-                if(UUID_MLDP_CONTROL_PRIVATE_CHAR.equals(characteristic.getUuid())){
+                if(UUID_MLDP_CONTROL_PRIVATE_CHAR.equals(characteristic.getUuid())){  // This UUID is not used for advanced MLDP controls (not applicable to this project)
                     byte[] data = characteristic.getValue();                       //Get the data in string format
                     //byte[] dataValue = characteristic.getValue();                                     //Example of getting data in a byte array
-                    String value = data.toString();
-                    Log.d(TAG, "Control Data :" + value);
+                    //String value = Arrays.toString(data);
+                    Log.d(TAG, "Control Data :" + Arrays.toString(data));
                     final Intent intent = new Intent(BLEService.ACTION_DATA_AVAILABLE);                         //Create the intent to announce the new data
-                    intent.putExtra(INTENT_EXTRA_SERVICE_DATA, value);                              //Add the data to the intent
+                    intent.putExtra(INTENT_EXTRA_SERVICE_DATA, data);                              //Add the data to the intent
                     sendBroadcast(intent);
                 }
             }
