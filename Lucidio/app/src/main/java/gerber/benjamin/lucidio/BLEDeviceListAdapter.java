@@ -1,33 +1,14 @@
-/*
- * POSSIBLY OBSOLETE OR FOR LATER USE
- *
- */
-
-
-
 
 package gerber.benjamin.lucidio;
-
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.widget.BaseAdapter;
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
-import org.w3c.dom.Text;
-
-import java.util.ArrayList;
 import java.util.List;
-
-/**
- * Created by ben on 2/24/18.
- */
 
 public class BLEDeviceListAdapter extends RecyclerView.Adapter<BLEDeviceListAdapter.DeviceViewHolder> {
 

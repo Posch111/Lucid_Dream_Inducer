@@ -29,16 +29,6 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.UUID;
 
-
-/**
- * Created by ben on 1/12/18.
- *
- * This fragment contains the Homepage which contains limited functionality
- *
- *
- *
- */
-
 public class BleFragment extends Fragment implements View.OnClickListener{
 
     private MainActivity activity;

@@ -9,9 +9,6 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-/**
- * Created by ben on 1/23/18.
- */
 
 public class DataFragment extends Fragment {
 

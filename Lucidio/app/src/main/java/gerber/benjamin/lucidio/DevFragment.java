@@ -1,6 +1,5 @@
 package gerber.benjamin.lucidio;
 
-import android.database.sqlite.SQLiteException;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -11,11 +10,7 @@ import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.ToggleButton;
-/**
- * Created by ben on 1/23/18.
- */
 
 public class DevFragment extends Fragment implements View.OnClickListener{
 
@@ -25,7 +20,7 @@ public class DevFragment extends Fragment implements View.OnClickListener{
     private EditText commandText;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         activity = (MainActivity) getActivity();
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_dev, container, false);
@@ -41,19 +36,16 @@ public class DevFragment extends Fragment implements View.OnClickListener{
                 byte[] data = new byte[]{(byte) ledValue};
                 activity.bleService.writeMLDP(data);
                 Log.i("led brightness", String.valueOf(ledValue));
-
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                byte[] data = new byte[]{(byte) 68};
-                activity.bleService.writeMLDP(data);
+                activity.sendBLECmd('L');
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                byte[] data = new byte[]{(byte) 101};
-                activity.bleService.writeMLDP(data);
+                activity.bleService.writeMLDP(new byte[] {(byte)101});
             }
         });
 
@@ -68,20 +60,8 @@ public class DevFragment extends Fragment implements View.OnClickListener{
             public void onClick(View v) {
                 String text = commandText.getText().toString();
                 if(!text.isEmpty()){
-
-                    if((text.length() >= 2) &&(text.substring(0,2).equals("SR"))){
-                        byte[] command = "SR,".getBytes();
-                        String hexString = text.substring(3);
-                        byte[] value = MainActivity.decodeHexString(hexString);
-                        byte[] message = new byte[command.length + value.length];
-                        System.arraycopy(command,0,message,0,command.length);
-                        System.arraycopy(value,0,message,command.length,value.length);
-                        activity.bleService.writeMLDP(message);
-
-                    }
-                    activity.bleService.writeMLDP(commandText.getText().toString().getBytes());
+                    activity.sendBLECmd(text);
                 }
-
             }
         });
 
@@ -107,10 +87,8 @@ public class DevFragment extends Fragment implements View.OnClickListener{
                 if (isChecked) {
                     // The toggle is disabled
                     MainActivity.settingsBytes[1] = (byte) 1;
-
-                    byte[] ledEnableCommand = new byte[] {77};
                     try{
-                        activity.bleService.writeMLDP(ledEnableCommand);
+                        //activity.sendBLECmd(ledEnableCommand);
                         Thread.sleep(120); //Extra delay for sending LED value after receive cmd
                     }catch (InterruptedException e){
                         e.printStackTrace();
@@ -124,7 +102,7 @@ public class DevFragment extends Fragment implements View.OnClickListener{
                     Log.i("CMD", "LED 3 Off");
                     byte[] ledEnableCommand = new byte[] {77};
                     try{
-                        activity.bleService.writeMLDP(ledEnableCommand);
+                        //ctivity.sendBLECmd();
                         Thread.sleep(120); //Extra delay for sending LED value after receive cmd
                     }catch (InterruptedException e){
                         e.printStackTrace();
@@ -198,9 +176,8 @@ public class DevFragment extends Fragment implements View.OnClickListener{
     public void onClick(View view) {
         byte data[];
         switch (view.getId()) {
-            case (R.id.stop_rem_butt):                          //Stop REM Command
-                data = new byte[]{(byte) 75};
-                activity.bleService.writeMLDP(data);
+            case (R.id.stop_rem_butt):
+                activity.sendBLECmd(BleCmds.WAKE);
                 BLEService.sleeping = false;
                 break;
 //
@@ -215,26 +192,22 @@ public class DevFragment extends Fragment implements View.OnClickListener{
 //                }catch (Exception e){return;}
 //                break;
 
-            case (R.id.start_rem_butt):
-                data = new byte[]{(byte) 74};                   //Button to kick us into REM sleep
-                activity.bleService.writeMLDP(data);
+            case (R.id.start_rem_butt):                //Button to kick us into REM sleep
+                activity.sendBLECmd(BleCmds.REMNOTIFIER);
                 break;
 
-            case (R.id.start_sleep_butt):                       //Sleep Button
-                data = new byte[]{(byte) 73};
-                activity.bleService.writeMLDP(data);
+            case (R.id.start_sleep_butt):
+                activity.sendBLECmd(BleCmds.SLEEP);  //Sleep button
                 BLEService.sleeping = true;
                 break;
 
             case (R.id.stop_sleep_butt):
-                data = new byte[]{(byte) 76};
-                activity.bleService.writeMLDP(data);
+                activity.sendBLECmd(BleCmds.WAKE);
                 BLEService.sleeping = false;
                 break;
 
             case(R.id.button_test_protocol):                          //test light protocol
-                data = new byte[] {(byte) 66};
-                activity.bleService.writeMLDP(data);
+                activity.sendBLECmd(BleCmds.PROTOCOL);
         }
     }
 

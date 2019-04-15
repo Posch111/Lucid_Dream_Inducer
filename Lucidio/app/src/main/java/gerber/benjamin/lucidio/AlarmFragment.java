@@ -15,10 +15,6 @@ import android.widget.ToggleButton;
 import java.sql.Time;
 import java.util.Calendar;
 
-/**
- * Created by ben on 1/23/18.
- */
-
 public class AlarmFragment extends Fragment{
 
     TimePicker alarmTimePicker;

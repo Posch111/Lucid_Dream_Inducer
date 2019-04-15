@@ -58,11 +58,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Dictionary;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 import gerber.benjamin.lucidio.BLEService.BluetoothLeBinder;
+
+
 
 public class MainActivity extends AppCompatActivity {
 
@@ -93,8 +97,8 @@ public class MainActivity extends AppCompatActivity {
     private Fragment frag;
 
     //Data Objects
-    public  ArrayList<Long>mEogDataTime = new ArrayList<>();
-    public  ArrayList<Integer>mEogData = new ArrayList<>();
+    public ArrayList<Long> mEogDataTime = new ArrayList<>();
+    public ArrayList<Integer> mEogData = new ArrayList<>();
     public static Calendar calendar = Calendar.getInstance();
     public static Date currentLocalTime = calendar.getTime();
     public static final DateFormat timeFormatter = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault());
@@ -144,16 +148,14 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }
         //Requests permissions for required location services
-        if(!hasPermissions(this, PERMISSIONS)){
+        if (!hasPermissions(this, PERMISSIONS)) {
             ActivityCompat.requestPermissions(this, PERMISSIONS, 1);
         }
 
-        if(isExternalStorageWritable())
-        {
+        if (isExternalStorageWritable()) {
             extWrite = true;
             extReadOnly = false;
-        }else if(isExternalStorageReadable())
-        {
+        } else if (isExternalStorageReadable()) {
             extReadOnly = false;
         }
         mHandler = new Handler();
@@ -174,27 +176,26 @@ public class MainActivity extends AppCompatActivity {
 
         //setup broadcast message receiver to allow BLEservice to send messages
         IntentFilter filter = new IntentFilter(BLEService.ACTION_GATT_SERVICES_DISCOVERED);
-         filter.addAction(BLEService.ACTION_DATA_AVAILABLE);
-         filter.addAction(BLEService.ACTION_GATT_CONNECTED);
-         filter.addAction(BLEService.ACTION_GATT_DISCONNECTED);
-         filter.addAction(BLEService.ACTION_SCAN_COMPLETE);
-         filter.addAction(BLEService.ACTION_SERVICE_BOUND);
-         filter.addAction(BLEService.ACTION_MLDP_NOT_FOUND);
+        filter.addAction(BLEService.ACTION_DATA_AVAILABLE);
+        filter.addAction(BLEService.ACTION_GATT_CONNECTED);
+        filter.addAction(BLEService.ACTION_GATT_DISCONNECTED);
+        filter.addAction(BLEService.ACTION_SCAN_COMPLETE);
+        filter.addAction(BLEService.ACTION_SERVICE_BOUND);
+        filter.addAction(BLEService.ACTION_MLDP_NOT_FOUND);
         registerReceiver(bleBroadcastReceiver, filter);
 
         //Initializes floating action  button and the switching to the sleep fragment on press
         final FloatingActionButton sleep_butt = (FloatingActionButton) findViewById(R.id.sleep_butt);
-        sleep_butt.setOnClickListener(new View.OnClickListener(){
+        sleep_butt.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
-                try{
-                    byte[] data = new byte[] {(byte) 73};
-                    bleService.writeMLDP(data);
+            public void onClick(View view) {
+                try {
+                    sendBLECmd(BleCmds.SLEEP);
                     Thread.sleep(120);
 //                    data[0] = (byte) 74;
 //                    bleService.writeData(data);
                     Thread.sleep(120);
-                }catch(InterruptedException e){
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
@@ -275,18 +276,21 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if(action == null) return;
+            if (action == null) return;
 
-            switch (action){
+            switch (action) {
                 case BLEService.ACTION_SERVICE_BOUND:
 
                     setDefaultFragment();
                     break;
                 case BLEService.ACTION_GATT_CONNECTED:
                     Toast.makeText(context,
-                            "Connected to "+ bleService.bluetoothDevice.getName(),
+                            "Connected to " + bleService.bluetoothDevice.getName(),
                             Toast.LENGTH_LONG).show();
-                    findViewById(R.id.scanResultsView).setVisibility(View.INVISIBLE);
+                    if (findViewById(R.id.scanResultsView) != null) {
+                        findViewById(R.id.scanResultsView).setVisibility(View.INVISIBLE);
+                    }
+
                     mConnected = true;
                     break;
                 case BLEService.ACTION_GATT_DISCONNECTED:
@@ -298,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
                 case BLEService.ACTION_SCAN_COMPLETE:
 
                     ProgressBar progressBar = findViewById(R.id.scanProgressBar);
-                    if(progressBar != null ){
+                    if (progressBar != null) {
                         progressBar.setVisibility(View.INVISIBLE);
                     }
                     break;
@@ -307,14 +311,14 @@ public class MainActivity extends AppCompatActivity {
                     TextView incomingSleepModeDataView = findViewById(R.id.data_text_view);
                     byte[] data = intent.getByteArrayExtra(BLEService.INTENT_EXTRA_SERVICE_DATA);
 
-                    if((data != null)){
-                        if(incomingSleepModeDataView != null){
+                    if ((data != null)) {
+                        if (incomingSleepModeDataView != null) {
                             incomingSleepModeDataView.setText(Arrays.toString(data));
                         }
-                        if(incomingTextView != null) {
+                        if (incomingTextView != null) {
                             incomingTextView.setText(Arrays.toString(data));
                         }
-                        if(BLEService.sleeping){
+                        if (BLEService.sleeping) {
                             for (byte aData : data) {
                                 mEogData.add((int) aData);
                                 mEogDataTime.add((long) mEogDataTime.size());
@@ -346,18 +350,18 @@ public class MainActivity extends AppCompatActivity {
                 int itemId = menuItem.getItemId(); // get selected menu item's id
 
                 // check selected menu item's id and replace a Fragment Accordingly
-                if (itemId == R.id.nav_home){
+                if (itemId == R.id.nav_home) {
                     transaction.add(R.id.frame, homeFragment, "home");
                 } else if (itemId == R.id.nav_alarms) {
                     transaction.add(R.id.frame, alarmFragment, "alarm");
                 } else if (itemId == R.id.nav_cues) {
                 } else if (itemId == R.id.nav_data) {
                     transaction.add(R.id.frame, dataFragment, "data");
-                } else if (itemId == R.id.nav_settings){
+                } else if (itemId == R.id.nav_settings) {
                     transaction.add(R.id.frame, settingFragment, "setting");
-                } else if (itemId == R.id.nav_help){
+                } else if (itemId == R.id.nav_help) {
                     transaction.add(R.id.frame, helpFragment, "help");
-                }else{
+                } else {
                     transaction.commit();
                     return false;
                 }
@@ -376,7 +380,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Alarms Section
-    public void setAlarm (int hour, int minute){
+    public void setAlarm(int hour, int minute) {
         // Set the alarm to start at 8:30 a.m.
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(System.currentTimeMillis());
@@ -384,9 +388,9 @@ public class MainActivity extends AppCompatActivity {
         calendar.set(Calendar.MINUTE, minute);
     }
 
-    public void disableAlarm(){
+    public void disableAlarm() {
         // If the alarm has been set, cancel it.
-        if (alarmMgr!= null) {
+        if (alarmMgr != null) {
             alarmMgr.cancel(alarmIntent);
         }
     }
@@ -401,55 +405,58 @@ public class MainActivity extends AppCompatActivity {
      */
 
     //Function for saving all the settings
-    public void saveSettings(){
+    public void saveSettings() {
 
         //Initialize First Time settings
-        if(firstTimeFlag){
-            settingsBytes = new byte[] {(byte)0, (byte)0, (byte)0, (byte)50, };
+        if (firstTimeFlag) {
+            settingsBytes = new byte[]{(byte) 0, (byte) 0, (byte) 0, (byte) 50,};
             firstTimeFlag = false;
         }
 
         //Opens file, creates a new file if none exists, and writes the settings
         File settingsFile = new File(this.getFilesDir(), SETTINGS_FILENAME);
-        try{
-            if(settingsFile.exists()) {
+        try {
+            if (settingsFile.exists()) {
                 settingsFile.delete();
                 Log.i("CONFIG", "Created Config File");
             }
 
             settingsFile.createNewFile();
             FileOutputStream outputStream = getApplicationContext().openFileOutput(SETTINGS_FILENAME, Context.MODE_PRIVATE);
-            for(byte byteChar : settingsBytes) {
+            for (byte byteChar : settingsBytes) {
                 outputStream.write(byteChar);
                 int byteInt = byteChar;
                 Log.i("CONFIG", String.valueOf(byteInt));
             }
             outputStream.close();
             Log.i("CONFIG", "Settings Saved");
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
-            Log.i("CONFIG", "Settings Failed to Save"); }
+            Log.i("CONFIG", "Settings Failed to Save");
+        }
     }
 
     //Function to load settings from config file
-    public void loadSettings(){
+    public void loadSettings() {
 
         byte[] data = new byte[5];                                          //Initialize temp array
         File settingsFile = new File(this.getFilesDir(), SETTINGS_FILENAME);//Get full filepath
-        if(settingsFile.exists()) {
+        if (settingsFile.exists()) {
             firstTimeFlag = false;
-        } else {saveSettings();}
-        try{
+        } else {
+            saveSettings();
+        }
+        try {
             inputStream = new FileInputStream(settingsFile);
             inputStream.read(data);                                         //Open File
             inputStream.close();
-        }catch (FileNotFoundException e){
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
-        }catch (IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
         //Iterate through read values, and assign them to settings
-        for(int i = 0; i < 5; i++){
+        for (int i = 0; i < 5; i++) {
             int byteInt = data[i];
             settingsBytes[i] = data[i];
             Log.i("CONFIG", String.valueOf(byteInt));
@@ -457,36 +464,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Function for applying settings to MSP430
-    public void applyBrightness(){
+    public void applyBrightness() {
         /*
                 Here we will set initial settings when we connect with the Bluetooth
         */
-            byte[] data = new byte[] {settingsBytes[3]};                            //Set LED Brightness from settings
-            byte[] ledset = new byte[]{(byte) 68};                                  //Set LED cmd
-
-            try{
-                bleService.writeMLDP(ledset);
-                Thread.sleep(120); //Extra delay for sending LED value after receive cmd
-                bleService.writeMLDP(data);
-                Thread.sleep(120);
-            }catch (InterruptedException e){
-                e.printStackTrace();
-            }
+        byte[] data = new byte[]{settingsBytes[3]};                            //Set LED Brightness from settings
+        try {
+            sendBLECmd(BleCmds.LEDSET);
+            Thread.sleep(120); //Extra delay for sending LED value after receive cmd
+            bleService.writeMLDP(data);
+            Thread.sleep(120);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     //Saves EOG Data and timestamp
-    public boolean saveEogData (){
+    public boolean saveEogData() {
 
         String dateStamp = dateFormatter.format(currentLocalTime);
-        String filename = "Sleep_data_" + dateStamp.replace("/" ,"_") + ".csv";  //Datestamped Filename
+        String filename = "Sleep_data_" + dateStamp.replace("/", "_") + ".csv";  //Datestamped Filename
         String fullDir = getFullDir().getAbsolutePath();                               //Get Filepath
         Log.i("STORAGE", fullDir + filename);
 
         //Uses OutputStreamWriter to print a csv format data set of type <timestamp>,<data>
         try {
-                OutputStreamWriter outputStreamWriter =
-                        new OutputStreamWriter(new FileOutputStream(new File(fullDir, filename)));
-            for(int i = 0; i < mEogData.size(); i++){
+            OutputStreamWriter outputStreamWriter =
+                    new OutputStreamWriter(new FileOutputStream(new File(fullDir, filename)));
+            for (int i = 0; i < mEogData.size(); i++) {
                 String streamLine;
                 streamLine = mEogDataTime.get(i) + "," + mEogData.get(i) + "\n";
                 //Log.i("STORAGE", streamLine + "iteration:" + String.valueOf(i));
@@ -529,8 +534,10 @@ public class MainActivity extends AppCompatActivity {
         if (!file.exists()) {
             try {
                 file.createNewFile();
-                Log.i("STORAGE", "created " + file.getPath());}
-            catch (IOException e){e.printStackTrace();}
+                Log.i("STORAGE", "created " + file.getPath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return file;
     }
@@ -568,12 +575,21 @@ public class MainActivity extends AppCompatActivity {
         return (byte) ((firstDigit << 4) + secondDigit);
     }
 
-    static private int toDigit(char hexChar) {
+    static public int toDigit(char hexChar) {
         int digit = Character.digit(hexChar, 16);
-        if(digit == -1) {
+        if (digit == -1) {
             throw new IllegalArgumentException(
-                    "Invalid Hexadecimal Character: "+ hexChar);
+                    "Invalid Hexadecimal Character: " + hexChar);
         }
         return digit;
+    }
+
+    public void sendBLECmd(char cmd) {
+        String command = "LUCID" + cmd;
+        bleService.writeMLDP(command);
+    }
+    public void sendBLECmd(String cmd) {
+        String command = "LUCID" + cmd;
+        bleService.writeMLDP(command);
     }
 }

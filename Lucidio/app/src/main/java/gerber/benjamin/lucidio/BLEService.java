@@ -13,15 +13,11 @@ import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.ScanSettings;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Binder;
 import android.util.Log;
 import android.widget.Toast;
-
-import java.io.ByteArrayInputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;

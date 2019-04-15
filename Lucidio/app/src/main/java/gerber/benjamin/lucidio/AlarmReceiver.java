@@ -1,8 +1,5 @@
 package gerber.benjamin.lucidio;
 
-/**
- * Created by ben on 3/26/18.
- */
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

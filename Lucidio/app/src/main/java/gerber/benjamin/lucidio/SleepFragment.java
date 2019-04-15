@@ -1,6 +1,5 @@
 package gerber.benjamin.lucidio;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -23,8 +22,6 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
     private LineGraphSeries<DataPoint> mSeries;
     private MainActivity activity;
     private BLEService bleService;
-    private boolean streamData = false;
-    private boolean cmdrun = false;
 
     //Bluetooth Commands to MSP430 system
     private byte[] motorOn = new byte[]{0x45};
@@ -43,8 +40,6 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
         bleService = activity.bleService;
         if (bleService.getConnectionState() == BLEService.STATE_DISCONNECTED) {
             Toast.makeText(getActivity(), "Bluetooth Not Connected", Toast.LENGTH_SHORT).show();
-            cmdrun = false;
-            streamData = false;
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -98,9 +93,6 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
         final Button button = v.findViewById(R.id.end_sleep_butt);
         button.setOnClickListener(this);
 
-        cmdrun = true;
-        streamData = true;
-
         activity.mEogData.clear();
         activity.mEogDataTime.clear();
         return v;
@@ -114,23 +106,22 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
             activity.mEogDataTime.add((long) 0);
         }
 
-            mTimer = new Runnable() {
-                @Override
-                public void run() {
-                    mSeries.appendData(new DataPoint(activity.mEogDataTime.get(
-                            activity.mEogDataTime.size() - 1),
-                            activity.mEogData.get(
-                                    activity.mEogData.size() - 1)), true, 1920);
-                    mHandler.postDelayed(this, 100);
-                }
-            };
-            mHandler.postDelayed(mTimer, 1000);
+        mTimer = new Runnable() {
+            @Override
+            public void run() {
+                mSeries.appendData(new DataPoint(activity.mEogDataTime.get(
+                        activity.mEogDataTime.size() - 1),
+                        activity.mEogData.get(
+                                activity.mEogData.size() - 1)), true, 1920);
+                mHandler.postDelayed(this, 100);
+            }
+        };
+        mHandler.postDelayed(mTimer, 1000);
 
-            new Thread(new dataSaveRunnable()).start();
-            //new Thread(new dataReceiveRunnable()).start();
-            //new Thread(new cmdRunnable()).start();
+        new Thread(new dataSaveRunnable()).start();
+        //new Thread(new dataReceiveRunnable()).start();
+        //new Thread(new cmdRunnable()).start();
     }
-
 
     @Override
     public void onPause() {
@@ -141,24 +132,21 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
     //Created a click listener for all of the buttons
     @Override
     public void onClick(View view) {
-        switch(view.getId()) {
+        switch (view.getId()) {
             case (R.id.end_sleep_butt):
-                byte[] data = new byte[] {(byte)75};
-                bleService.writeMLDP(data);
-                try{
+                activity.sendBLECmd(BleCmds.WAKE);
+                try {
                     Thread.sleep(150);
-                }catch(InterruptedException e){
+                } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                data[0] = (byte)73;
-                bleService.writeMLDP(data);
                 BLEService.sleeping = false;
                 Fragment frag = new SettingFragment();
                 FragmentTransaction transaction = getFragmentManager().beginTransaction();
                 transaction.replace(R.id.frame, frag); // replace a Fragment with Frame Layout
                 transaction.commit(); // commit the changes
                 Toast.makeText(activity, "Good Morning", Toast.LENGTH_SHORT).show();
-            break;
+                break;
         }
     }
 
@@ -167,51 +155,16 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
      */
 
     public class dataSaveRunnable implements Runnable {
-        public void run(){
-            while (BLEService.sleeping)
-
-
-                    try{
-                        Thread.sleep(10000);
-                        activity.saveEogData();
-                    }catch (InterruptedException e){
-                        e.printStackTrace();
-                    }
-
-            }
-
-    }
-    public class dataReceiveRunnable implements  Runnable {
-        public void run(){
-            while(streamData)
-            {
-            }
-    }}
-
-    public class cmdRunnable implements Runnable {
         public void run() {
-            while (cmdrun) {
-                while (!Thread.currentThread().isInterrupted()) {
-                    // do something in the loop
-                    try {
-                        bleService.writeMLDP(motorOn);
-                        Thread.sleep(333);
-                        bleService.writeMLDP(led3On);
-                        Thread.sleep(333);
-                        bleService.writeMLDP(led4On);
-                        Thread.sleep(333);
-                        bleService.writeMLDP(motorOff);
-                        Thread.sleep(333);
-                        bleService.writeMLDP(led3Off);
-                        Thread.sleep(333);
-                        bleService.writeMLDP(led4Off);
-                        Thread.sleep(333);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            while (BLEService.sleeping)
+                try {
+                    Thread.sleep(10000);
+                    activity.saveEogData();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            }
-        }
-    }
 
+        }
+
+    }
 }

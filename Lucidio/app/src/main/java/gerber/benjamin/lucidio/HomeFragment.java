@@ -9,16 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-
-/**
- * Created by ben on 1/12/18.
- *
- * This fragment contains the Homepage which contains limited functionality
- *
- *
- *
- */
-
 public class HomeFragment extends Fragment {
 
     @Override
