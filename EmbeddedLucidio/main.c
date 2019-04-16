@@ -198,7 +198,7 @@ int main(void)
               while(readBuffer[bufferHead-1] != 101){ //Decimal: 101
               ledOn(); //LEDs on to see PWM change in real time
               LED_dutycycle = readBuffer[bufferHead-1]; //receive a cmd_from_android seekBar progress value
-              TACCR1 = LED_dutycycle;
+              TA1CCR1 = LED_dutycycle;
               }
               //stop tracking SeekBars
               //remove later
@@ -216,7 +216,7 @@ int main(void)
 
         } //end switch(cmd_from_android)
 
-       while(sleep_mode) //if the transmit interrupt is enabled
+       while(sleep_mode)
        {
 
             if(cmd_from_android == 'W') //command from android to exit sleep mode
@@ -237,13 +237,13 @@ __interrupt void TIMER0A0_ISR(void) //Maybe move some of this code into main
 {
     if(sleep_mode)//if the user is in REM sleep, send REM data
     {
-       P1OUT &= ~BIT3; //led blink to show data transfer
+       P1OUT |= BIT3; //led blink to show data transfer
        ADC10CTL0 |= ENC + ADC10SC; //adc data capture
        while(ADC10CTL1 & ADC10BUSY);
        ADC10CTL0 &= ~ENC;
        IE2 |= UCA0TXIE;                    //enable uart TX interrupt
        UCA0TXBUF = ADC10MEM >> 2;        // UART stored and sent in UCA0TXBUF, divide by 4 for easier transmission
-       P1OUT |= BIT3;
+       P1OUT &= ~BIT3;
     }
 }
 

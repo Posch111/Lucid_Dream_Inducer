@@ -99,7 +99,7 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
         final Button button = v.findViewById(R.id.end_sleep_butt);
         button.setOnClickListener(this);
 
-        activity.resetEOGData();
+        //activity.resetEOGData();
         return v;
     }
 
