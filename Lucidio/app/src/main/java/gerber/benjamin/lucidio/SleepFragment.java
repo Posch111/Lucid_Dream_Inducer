@@ -15,6 +15,11 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
+import java.sql.Time;
+import java.time.Instant;
+import java.util.Calendar;
+import java.util.Date;
+
 public class SleepFragment extends Fragment implements View.OnClickListener {
 
     private final Handler mHandler = new Handler();
@@ -22,6 +27,7 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
     private LineGraphSeries<DataPoint> mSeries;
     private MainActivity activity;
     private BLEService bleService;
+    Calendar calendar = Calendar.getInstance();
 
     //Bluetooth Commands to MSP430 system
     private byte[] motorOn = new byte[]{0x45};
@@ -135,11 +141,6 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
         switch (view.getId()) {
             case (R.id.end_sleep_butt):
                 activity.sendBLECmd(BleCmds.WAKE);
-                try {
-                    Thread.sleep(150);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 BLEService.sleeping = false;
                 Fragment frag = new SettingFragment();
                 FragmentTransaction transaction = getFragmentManager().beginTransaction();
@@ -157,14 +158,15 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
 
     public class dataSaveRunnable implements Runnable {
         public void run() {
-            while (BLEService.sleeping)
+            while (BLEService.sleeping) {
+
                 try {
                     Thread.sleep(10000);
                     activity.saveEogData();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
+            }
         }
 
     }

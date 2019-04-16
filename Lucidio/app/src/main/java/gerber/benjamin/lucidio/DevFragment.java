@@ -29,6 +29,7 @@ public class DevFragment extends Fragment implements View.OnClickListener{
         //LED Seekbar
         SeekBar seekBar = v.findViewById(R.id.led_seek);
         seekBar.setMax(50);
+        seekBar.setProgress(25);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -49,6 +50,8 @@ public class DevFragment extends Fragment implements View.OnClickListener{
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                activity.bleService.writeMLDP(new byte[] {(byte)101}); //3 times to make sure hardware
+                activity.bleService.writeMLDP(new byte[] {(byte)101}); // leaves the 'L' loop
                 activity.bleService.writeMLDP(new byte[] {(byte)101});
             }
         });
