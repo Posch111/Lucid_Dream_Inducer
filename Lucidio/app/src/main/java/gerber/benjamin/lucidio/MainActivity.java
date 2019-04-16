@@ -4,22 +4,14 @@ import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
-import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
-import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.ComponentName;
 import android.content.IntentFilter;
-import android.os.Binder;
 import android.os.IBinder;
-import android.os.strictmode.InstanceCountViolation;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
@@ -33,40 +25,30 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.ServiceConnection;
 import android.content.BroadcastReceiver;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Environment;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.MenuItem;
-
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Dictionary;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 
 import gerber.benjamin.lucidio.BLEService.BluetoothLeBinder;
-
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -338,7 +320,7 @@ public class MainActivity extends AppCompatActivity {
     private void setNavigationDrawer() {
 
         dLayout = findViewById(R.id.drawer_layout); // initiate a DrawerLayout
-        NavigationView navView = findViewById(R.id.navigation); // initiate a Navigation View
+        final NavigationView navView = findViewById(R.id.navigation); // initiate a Navigation View
 
         // implement setNavigationItemSelectedListener event on NavigationView
         navView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -351,22 +333,21 @@ public class MainActivity extends AppCompatActivity {
 
                 // check selected menu item's id and replace a Fragment Accordingly
                 if (itemId == R.id.nav_home) {
-                    transaction.add(R.id.frame, homeFragment, "home");
+                    transaction.replace(R.id.frame, homeFragment, "home");
                 } else if (itemId == R.id.nav_alarms) {
-                    transaction.add(R.id.frame, alarmFragment, "alarm");
+                    transaction.replace(R.id.frame, alarmFragment, "alarm");
                 } else if (itemId == R.id.nav_cues) {
                 } else if (itemId == R.id.nav_data) {
-                    transaction.add(R.id.frame, dataFragment, "data");
+                    transaction.replace(R.id.frame, dataFragment, "data");
                 } else if (itemId == R.id.nav_settings) {
-                    transaction.add(R.id.frame, settingFragment, "setting");
+                    transaction.replace(R.id.frame, settingFragment, "setting");
                 } else if (itemId == R.id.nav_help) {
-                    transaction.add(R.id.frame, helpFragment, "help");
+                    transaction.replace(R.id.frame, helpFragment, "help");
                 } else {
-                    transaction.commit();
                     return false;
                 }
-
                 transaction.commit();
+                dLayout.closeDrawer(navView);
                 return true;
             }
         });
@@ -486,17 +467,17 @@ public class MainActivity extends AppCompatActivity {
         String filename = "Sleep_data_" + dateStamp.replace("/", "_") + ".csv";  //Datestamped Filename
         String fullDir = getFullDir().getAbsolutePath();                               //Get Filepath
         Log.i("STORAGE", fullDir + filename);
-
         //Uses OutputStreamWriter to print a csv format data set of type <timestamp>,<data>
         try {
+            String path = getFilesDir().getAbsolutePath();
             OutputStreamWriter outputStreamWriter =
                     new OutputStreamWriter(new FileOutputStream(new File(fullDir, filename)));
             for (int i = 0; i < mEogData.size(); i++) {
                 String streamLine;
-                streamLine = mEogDataTime.get(i) + "," + mEogData.get(i) + "\n";
+                streamLine = mEogData.get(i) + "\n";
                 //Log.i("STORAGE", streamLine + "iteration:" + String.valueOf(i));
                 outputStreamWriter.write(streamLine);
-
+                eogLastWriteIndex++;
             }
             outputStreamWriter.close();
         } catch (Exception e) {
@@ -556,6 +537,8 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+
+    //Utility functions
     public static byte[] decodeHexString(String hexString) {
         if (hexString.length() % 2 == 1) {
             throw new IllegalArgumentException(
@@ -592,4 +575,11 @@ public class MainActivity extends AppCompatActivity {
         String command = "LUCID" + cmd;
         bleService.writeMLDP(command);
     }
+
+    public void resetEOGData(){
+        eogLastWriteIndex = 0;
+        mEogData.clear();
+        mEogDataTime.clear();
+    }
+
 }

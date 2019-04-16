@@ -61,7 +61,7 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
         BLEService.sleeping = true;
 
         //Initializes second graphview
-        GraphView graph = (GraphView) v.findViewById(R.id.sleep_graph_rt);
+        GraphView graph = v.findViewById(R.id.sleep_graph_rt);
         mSeries = new LineGraphSeries<>();
         graph.addSeries(mSeries);
 
@@ -88,19 +88,19 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
         graph.getViewport().setYAxisBoundsManual(true);
         graph.getViewport().setMinY(-250);
         graph.getViewport().setMaxY(250);
-
-        //BUttons
+        graph.getViewport().setScalable(true);
+        //Buttons
         final Button button = v.findViewById(R.id.end_sleep_butt);
         button.setOnClickListener(this);
 
-        activity.mEogData.clear();
-        activity.mEogDataTime.clear();
+        activity.resetEOGData();
         return v;
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        activity.findViewById(R.id.sleep_butt).setVisibility(View.INVISIBLE);
         if (activity.mEogData.size() == 0) {
             activity.mEogData.add(0);
             activity.mEogDataTime.add((long) 0);
@@ -146,6 +146,7 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
                 transaction.replace(R.id.frame, frag); // replace a Fragment with Frame Layout
                 transaction.commit(); // commit the changes
                 Toast.makeText(activity, "Good Morning", Toast.LENGTH_SHORT).show();
+                activity.findViewById(R.id.sleep_butt).setVisibility(View.VISIBLE);
                 break;
         }
     }

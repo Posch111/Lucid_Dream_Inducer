@@ -33,7 +33,11 @@ public class DevFragment extends Fragment implements View.OnClickListener{
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 ledValue = progress;
+                if(((char)progress)=='D'){
+                    return;
+                }
                 byte[] data = new byte[]{(byte) ledValue};
+
                 activity.bleService.writeMLDP(data);
                 Log.i("led brightness", String.valueOf(ledValue));
             }

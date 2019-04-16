@@ -14,6 +14,7 @@
 //Phone Commands
 char commandPattern[] = "LUCID";  //if this sequence of characters is received, next char will be read as android command (in RX interrupt)
 int commandNotification =0;
+int commandPending = 0;
 unsigned char cmd_from_android = 0;       //variable for receiving BT commands from Android device
 
 /*  from phone:
@@ -40,18 +41,16 @@ unsigned char MLDP[] = "I\r\n";
 
 //-----------------Initialize variables----------------------//
 const int BUFFER_MAX_SIZE = 50;
-unsigned char readBuffer[BUFFER_MAX_SIZE]; //implemented as ring buffer
+unsigned char readBuffer[BUFFER_MAX_SIZE]; //implemented as ring buffer to receive and store UART messages
 int bufferTail =0; //buffer read index used to keep track of last index value read
 int bufferHead =0; //used to keep track of the most recent buffer write index.
 unsigned char lastRead[BUFFER_MAX_SIZE]; //the most recent read values, auto updated with read_ReadBuffer()
 char send[20]; // debugging array to see outgoing uart
 int sendIndex = 0;
-int LED_cue = 0;
-int motor_cue = 1;
 int sleep_mode = 0;
 int REM_notification = 0;               //boolean variable to signal REM sleep detected
-int LED_brightness = 10;
-int freq_counter = 0;
+int LED_dutycycle = 10;
+long counter =0;
 volatile int prev_freq_state;
 volatile int freq_state;
 int timer_count = 0;
@@ -80,16 +79,16 @@ int main(void)
 
     WDTCTL = WDTPW | WDTHOLD;         // stop watchdog timer
 
-    //----------------Configure Timer_A0----------------------//
-    TACCTL0 = CCIE;
-    TA0CTL |= TASSEL_2 + MC0 + ID_3;
-    TA0CCR0 = 1024;                    // 1245*100 interrupts = 1 second
+    //----------------Configure Timer_B0----------------------//
+    TA0CTL |= TASSEL_2 + ID_3 + MC_1;
+    TA0CCTL0 = CCIE;
+    TA0CCR0 = 833;                    //    (1,000,000 clock cycles) / ( 8 (clock divider setting) *150samples/sec) = 833 cycles/sample
 
-    //----------------Configure Timer_A1----------------------// for LEDS pwm
+    //----------------Configure Timer_A1----------------------// for LEDS pwm -- can't make it work
     TA1CCTL1 = OUTMOD_7; // used for pwm to set pin high if counting to CCR0 and reset to low when reaching CCR1
     TA1CCR0 = 100; //period
-    TA1CCR1 = 0; //duty cycle, meaning TA1CCR1 has to be less than or equal to TA1CCR0
-    TA1CTL = TASSEL_2;
+    TA1CCR1 = LED_dutycycle; //duty cycle, meaning TA1CCR1 has to be less than or equal to TA1CCR0
+    TA1CTL = TASSEL_2 + MC_1 + ID_3;
 
     //------------------- Configure the Clocks -------------------//
     BCSCTL1 = CALBC1_1MHZ;             // Set range
@@ -103,7 +102,7 @@ int main(void)
     UCA0BR1   =  0;                   // -selects baudrate =115200 bps,clk = SMCLK
     UCA0MCTL  = BIT3 + BIT2;             // from datasheet
     UCA0CTL1 &= ~UCSWRST;             // Clear UCSWRST to enable USCI_A0
-    //    //---------------- Enabling the interrupts ------------------//
+    //---------------- Enabling the interrupts ------------------//
 
     IE2 |= UCA0RXIE;                 // Enable uart RX interrupt
     __enable_interrupt();           // Enable the global interrupt
@@ -121,13 +120,12 @@ int main(void)
     P1SEL2 |=  BIT1 + BIT2;                 // P1.2 UCA0TXD output
     P1DIR  |=  BIT3 + BIT4 + BIT6;           //P1.3,1.4,1.6 set as outputs (LED1,LED2,WAKE_SW)
     P1DIR  &=  ~(BIT0 + BIT5);               //P1.0,1.5 set as input
-    P2DIR |= BIT0 + BIT1 + BIT2 + BIT4 + BIT5;       //P2.0, 2.1 2.2, 2.4 2.5 set as outputs (turned off by default)
+    P2DIR |= BIT0 + BIT4 + BIT5;       //P2.0, 2.1 2.2, 2.4 2.5 set as outputs (turned off by default)
     P2DIR &= ~(BIT3);                     //P2.3 set as input
     P2SEL |= BIT1 + BIT2;                 //P2.1 and 2.2 set for PWM (Comment out to control LEDs normally)
     P1OUT |= BIT3 + BIT4;            //LEDs
-    P2OUT |=  BIT4 + BIT5;            //BIT0=MLDP BIT4=used for uart flow control RTS if enabled on ble chip(might use for MLDP)  BIT5 = SW_WAKE
+    P2OUT |=  BIT1 + BIT2 + BIT4 + BIT5;            //BIT0=MLDP BIT4=used for uart flow control RTS if enabled on ble chip(might use for MLDP)  BIT5 = SW_WAKE
     P2OUT &= ~(BIT0 + BIT1 + BIT2);  //Set pin 2.0,1,2,5  low
-
     ledOff();
 
     //---------------- Commands to Set Up Bluetooth ------------------//
@@ -136,14 +134,13 @@ int main(void)
    sendUartCmd(ECHO, sizeof(ECHO)); //RN4020 will echo back commands
    sendUartCmd(SETSETTINGS, sizeof(SETSETTINGS)); //RN4020 freeezes and needs a manual power cycle to work again (followed by commenting out this code)
    sendUartCmd(SETNAME, sizeof(SETNAME));
-   //sendUartCmd(GETSETTINGS, sizeof(GETSETTINGS));
-   rebootBLE(); //reboot after changing a setting (and one every startup)
+   //sendUartCmd(GETSETTINGS, sizeof(GETSETTINGS)); //RN4020 sends back the current SR command settings
+   rebootBLE(); //reboot after changing a setting
    //sendUartCmd(SERVICES, sizeof(SERVICES)); //not needed, but can be used to enable other bluetooth servies besides MLDP
 
     //------------------------- Main ----------------------------//
     while(1)
     {
-        TA1CCR1 = LED_brightness;
         /*
          * Using Morse Code standards, 1 unit length = 50ms, but it felt too quick, so if 1e6 clock cycles = 1sec, 100000 cycles = 100ms.
          * The morse code for LD is .-..-.., which is 26 units long (2.6sec).
@@ -194,13 +191,14 @@ int main(void)
          case 'L' : //Decimal:68
              {
               //start tracking SeekBar
-              while(cmd_from_android != 0x65){ //Decimal: 101
-                  ledOn(); //LEDs on to see PWM change in real time
-                  LED_brightness = cmd_from_android; //receive a cmd_from_android seekBar progress value
-                  TA1CCR1 = LED_brightness; //set brightness to PWM duty cycle
+
+              while((readBuffer[bufferHead-1]) != 101){ //Decimal: 101
+              ledOn(); //LEDs on to see PWM change in real time
+              LED_dutycycle = readBuffer[bufferHead-1]; //receive a cmd_from_android seekBar progress value
+              TACCR1 = LED_dutycycle;
               }
               //stop tracking SeekBars
-                //remove later
+              //remove later
               cmd_from_android = 0; //reset cmd_from_android good practices
               ledOff();
               break;
@@ -229,23 +227,21 @@ int main(void)
 
 }
 
-
-//------------------------Timer A0 interrupt-----------------------//
+//------------------------Timer A0 interrupt-----------------------// controls both LED pwm and voltage data frequency
 
 #pragma vector=TIMER0_A0_VECTOR
 __interrupt void TIMER0A0_ISR(void) //Maybe move some of this code into main
 {
-
-    if(sleep_mode)//REM_notification                      //if the user is in REM sleep, send REM data
+    if(sleep_mode)//if the user is in REM sleep, send REM data
     {
+       P1OUT &= ~BIT2; //led blink to show data transfer
        ADC10CTL0 |= ENC + ADC10SC; //adc data capture
        while(ADC10CTL1 & ADC10BUSY);
        ADC10CTL0 &= ~ENC;
        IE2 |= UCA0TXIE;                    //enable uart TX interrupt
-       int x = ADC10MEM >>2;
        UCA0TXBUF = ADC10MEM >> 2;        // UART stored and sent in UCA0TXBUF, divide by 4 for easier transmission
+       P1OUT |= BIT2;
     }
-    else return;
 }
 
 //-----------Transmit and Receive interrupts-----------------------//
@@ -266,10 +262,35 @@ __interrupt void ReceiveInterrupt(void)
         cmd_from_android = data;
         commandNotification = 0;
     }
+
     if(data == 'D'){
         patternDetector("LUCID", 5);
     }
 
+}
+
+void patternDetector(unsigned char *pattern, int length){
+    int readIndex;
+    if(bufferHead < length){
+        readIndex = bufferHead - length + 50;
+    }
+    else{
+        readIndex = bufferHead - length;
+    }
+    int i;
+    for(i=0;i<length;i++){
+        if(readBuffer[readIndex] != commandPattern[i]){
+            commandNotification = 0;
+            return;
+        }
+        else{
+            readIndex++;
+            if(readIndex == BUFFER_MAX_SIZE){
+                readIndex = 0;
+            }
+        }
+    }
+    commandNotification = 1;
 }
 
 void sendUartCmd(unsigned char string[], int length){
@@ -290,6 +311,8 @@ void sendUartCmd(unsigned char string[], int length){
 }
 
 void factoryResetBluetooth(){
+    sendUartCmd(RESET, sizeof(RESET));
+    wait(100);
     //clear_ReadBuffer();
     //wakeBLE();
 //    int i;                        //can't get hardware reset to work, using reset command instead
@@ -321,7 +344,7 @@ void factoryResetBluetooth(){
     wait(5);
     P2OUT |= BIT5;
     wait(5);
-//    sendUartCmd(RESET, sizeof(RESET));
+
 //    sendUartCmd(REBOOT, sizeof(REBOOT));
     read_ReadBuffer();
 }
@@ -421,32 +444,10 @@ void toggleSleepMode(){
     if(sleep_mode==1){
         sleep_mode = 0;
     }
-    else sleep_mode =1;
+    else sleep_mode = 1;
 }
 
-void patternDetector(unsigned char *pattern, int length){
-    int readIndex;
-    if(bufferHead < length){
-        readIndex = bufferHead - length + 50;
-    }
-    else{
-        readIndex = bufferHead - length;
-    }
-    int i;
-    for(i=0;i<length;i++){
-        if(readBuffer[readIndex] != commandPattern[i]){
-            commandNotification = 0;
-            return;
-        }
-        else{
-            readIndex++;
-            if(readIndex == BUFFER_MAX_SIZE){
-                readIndex = 0;
-            }
-        }
-    }
-    commandNotification = 1;
-}
+
 
 void strcopy(unsigned char* strParent, unsigned char* strcopy, int length){
     int i;
