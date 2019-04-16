@@ -194,7 +194,7 @@ int main(void)
          case 'L' : //Decimal:68
              {
               //start tracking SeekBar
-
+              wait(50);
               while(readBuffer[bufferHead-1] != 101){ //Decimal: 101
               ledOn(); //LEDs on to see PWM change in real time
               LED_dutycycle = readBuffer[bufferHead-1]; //receive a cmd_from_android seekBar progress value
@@ -219,6 +219,9 @@ int main(void)
        while(sleep_mode)
        {
 
+            if(cmd_from_android == 'R'){
+
+            }
             if(cmd_from_android == 'W') //command from android to exit sleep mode
             {
                 sleep_mode = 0;

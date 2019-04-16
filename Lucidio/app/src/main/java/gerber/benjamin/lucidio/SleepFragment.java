@@ -1,9 +1,13 @@
 package gerber.benjamin.lucidio;
 
+import android.icu.text.SimpleDateFormat;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +19,6 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-import java.sql.Time;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
@@ -28,6 +31,7 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
     private MainActivity activity;
     private BLEService bleService;
     Calendar calendar = Calendar.getInstance();
+    private boolean past3am = false;
 
     //Bluetooth Commands to MSP430 system
     private byte[] motorOn = new byte[]{0x45};
@@ -157,9 +161,25 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
      */
 
     public class dataSaveRunnable implements Runnable {
+        @RequiresApi(api = Build.VERSION_CODES.N)
         public void run() {
             while (BLEService.sleeping) {
-
+//                SimpleDateFormat time = new SimpleDateFormat("HH:mm:ss z");
+//                String currentTime = time.format(new Date());
+//                if((currentTime.substring(1,1) == "3") && ){
+//                    past3am = true;
+//                }
+//                if(past3am || past4am || past5am){
+//                    activity.sendBLECmd('R');
+//                    past3am = past4am = past5am = false;
+//                }
+//                if(currentTime.substring(1,1) == "4"){
+//                    past4am = true;
+//                }
+//
+//                if(past4am){
+//                    activity.sendBLECmd('R');
+//                }
                 try {
                     Thread.sleep(10000);
                     activity.saveEogData();

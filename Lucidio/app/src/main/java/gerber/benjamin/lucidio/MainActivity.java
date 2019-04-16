@@ -568,8 +568,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void sendBLECmd(char cmd) {
-        String command = "LUCID" + cmd;
-        bleService.writeMLDP(command);
+        final String command = "LUCID" + cmd;
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                for(int i = 0;i<3;i++){
+                    bleService.writeMLDP(command);
+                    try{
+                        Thread.sleep(20);
+                    }catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } {
+                    }
+                }
+
+            }
+        });
     }
     public void sendBLECmd(String cmd) {
         String command = "LUCID" + cmd;
