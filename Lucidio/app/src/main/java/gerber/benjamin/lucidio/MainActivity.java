@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        saveEogData();
         homeFragment = new HomeFragment();
         helpFragment = new HelpFragment();
         alarmFragment = new AlarmFragment();
@@ -464,27 +464,29 @@ public class MainActivity extends AppCompatActivity {
     public boolean saveEogData() {
 
         String dateStamp = dateFormatter.format(currentLocalTime);
-        String filename = "Sleep_data_" + dateStamp.replace("/", "_") + ".csv";  //Datestamped Filename
-        String fullDir = getFullDir().getAbsolutePath();                               //Get Filepath
-        Log.i("STORAGE", fullDir + filename);
+        String filename = "/Sleep_data_" + dateStamp.replace("/", "_") + ".csv";  //Datestamped Filename
+        File eogFolder = getFullDir();
+        String path = eogFolder.getAbsolutePath(); //Get file path
+        Log.i("STORAGE", path + filename);
         //Uses OutputStreamWriter to print a csv format data set of type <timestamp>,<data>
-        try {
-            String path = getFilesDir().getAbsolutePath();
-            OutputStreamWriter outputStreamWriter =
-                    new OutputStreamWriter(new FileOutputStream(new File(fullDir, filename)));
-            for (int i = 0; i < mEogData.size(); i++) {
-                String streamLine;
-                streamLine = mEogData.get(i) + "\n";
-                //Log.i("STORAGE", streamLine + "iteration:" + String.valueOf(i));
-                outputStreamWriter.write(streamLine);
-                eogLastWriteIndex++;
+
+            try {
+                OutputStreamWriter outputStreamWriter =
+                        new OutputStreamWriter(new FileOutputStream(new File(path, filename)));
+                for (int i = 0; i < mEogData.size(); i++) {
+                    String streamLine;
+                    streamLine = mEogData.get(i) + "\n";
+                    //Log.i("STORAGE", streamLine + "iteration:" + String.valueOf(i));
+                    outputStreamWriter.write(streamLine);
+                    eogLastWriteIndex++;
+                }
+                outputStreamWriter.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.i("STORAGE", "EOG data not successfully saved");
+                return false;
             }
-            outputStreamWriter.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.i("STORAGE", "EOG data not successfully saved");
-            return false;
-        }
+
         Log.i("STORAGE", "EOG data saved");
         return true;
     }
@@ -509,17 +511,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public File getFullDir() {
-        // Get the directory for the user's public pictures directory.
-        File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "/eog/");
-
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-                Log.i("STORAGE", "created " + file.getPath());
-            } catch (IOException e) {
-                e.printStackTrace();
+        File file;
+        if(isExternalStorageWritable()){
+            // Get the directory for the user's public docs directory.
+            file = new File(Environment.getExternalStorageDirectory() + java.io.File.separator + "eog");
+            if (!file.mkdirs()) {
+                Log.e("File error", "Directory not created");
             }
         }
+        else{
+            // Get the directory for the user's internal directory.
+            file = new File(Environment.getDownloadCacheDirectory().getAbsolutePath() + File.separator + "eog");
+            if (!file.mkdirs()) {
+                Log.e("File error", "Directory not created");
+            }
+        }
+
         return file;
     }
 
@@ -536,7 +543,6 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
-
 
     //Utility functions
     public static byte[] decodeHexString(String hexString) {
