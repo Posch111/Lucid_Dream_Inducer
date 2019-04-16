@@ -4,6 +4,7 @@ import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.security.ConfirmationAlreadyPresentingException;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -22,6 +23,8 @@ import com.jjoe64.graphview.series.LineGraphSeries;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class SleepFragment extends Fragment implements View.OnClickListener {
 
@@ -30,8 +33,8 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
     private LineGraphSeries<DataPoint> mSeries;
     private MainActivity activity;
     private BLEService bleService;
-    Calendar calendar = Calendar.getInstance();
-    private boolean past3am = false;
+    Timer timer = new Timer();
+    Calendar calendar;
 
     //Bluetooth Commands to MSP430 system
     private byte[] motorOn = new byte[]{0x45};
@@ -60,13 +63,18 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
             transaction.replace(R.id.frame, frag); // replace a Fragment with Frame Layout
             transaction.commit(); // commit the changes
         }
+        //Set up time for protocol timer
+        calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 3);
+        calendar.set(Calendar.MINUTE,0);
+        timer.scheduleAtFixedRate( //Timer starts protocol every 30 minutes from 3am on.
+                new TimerTask() {
+                    @Override
+                    public void run() {
+                        activity.sendBLECmd('R'); //send rem cycle detection command
+                    }
+                }, calendar.getTime(),1800000);
 
-        //Initializes an dummy array for the creation of the graph (array will be offset by 1920)
-//        for (int i = 0; i < 1920; i++) {
-//            MainActivity.currentLocalTime.getTime();
-//            activity.mEogDataTime.add(System.currentTimeMillis());
-//            activity.mEogData.add(i, 150);
-//        }
         //Initialize data streaming
         BLEService.sleeping = true;
 
@@ -164,22 +172,11 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
         @RequiresApi(api = Build.VERSION_CODES.N)
         public void run() {
             while (BLEService.sleeping) {
-//                SimpleDateFormat time = new SimpleDateFormat("HH:mm:ss z");
-//                String currentTime = time.format(new Date());
-//                if((currentTime.substring(1,1) == "3") && ){
-//                    past3am = true;
-//                }
-//                if(past3am || past4am || past5am){
-//                    activity.sendBLECmd('R');
-//                    past3am = past4am = past5am = false;
-//                }
-//                if(currentTime.substring(1,1) == "4"){
-//                    past4am = true;
-//                }
-//
-//                if(past4am){
-//                    activity.sendBLECmd('R');
-//                }
+                if(Calendar.getInstance().get(Calendar.HOUR_OF_DAY) >= 7){ //if time is before 7am
+                    timer.cancel();
+                }
+
+
                 try {
                     Thread.sleep(10000);
                     activity.saveEogData();
@@ -188,6 +185,5 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
                 }
             }
         }
-
     }
 }

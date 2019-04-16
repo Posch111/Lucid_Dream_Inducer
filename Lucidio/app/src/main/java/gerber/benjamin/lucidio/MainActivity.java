@@ -572,11 +572,11 @@ public class MainActivity extends AppCompatActivity {
 
         mHandler.post(new Runnable() {
             @Override
-            public void run() {
+            public void run() { //second command 3 times to ensure the board receives it
                 for(int i = 0;i<3;i++){
                     bleService.writeMLDP(command);
                     try{
-                        Thread.sleep(20);
+                        Thread.sleep(50);
                     }catch (InterruptedException e) {
                         e.printStackTrace();
                     } {
@@ -586,9 +586,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    public void sendBLECmd(String cmd) {
-        String command = "LUCID" + cmd;
-        bleService.writeMLDP(command);
+    public void sendBLECmd(String cmd) {  //TODO board isn't set up for multi-char commands yet;
+        final String command = "LUCID" + cmd;
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() { //second command 3 times to ensure the board receives it
+                for(int i = 0;i<3;i++){
+                    bleService.writeMLDP(command);
+                    try{
+                        Thread.sleep(50);
+                    }catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } {
+                    }
+                }
+
+            }
+        });
     }
 
     public void resetEOGData(){

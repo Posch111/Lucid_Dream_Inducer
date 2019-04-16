@@ -72,6 +72,7 @@ int strcompare(unsigned char*, unsigned char*, int);
 void ledOn();
 void ledOff();
 void toggleSleepMode();
+void protocol1();
 void patternDetector(unsigned char*, int);
 
 int main(void)
@@ -156,37 +157,6 @@ int main(void)
             unsigned int i; //for loop value
             for(i=1; i>0; i-- ){
 
-            //switchings bits on and off as according to morse code L
-            ledOn();
-            wait(unit_length);
-            ledOff();
-            wait(unit_length);  //wait one unit
-            ledOn();
-            wait(unit_length*3); //wait three units
-            ledOff();
-            wait(unit_length);//wait one unit
-            ledOn();
-            wait(unit_length); //wait one unit
-            ledOff();
-            wait(unit_length); //wait one unit
-            ledOn();
-            wait(unit_length); //wait one unit
-            ledOff();
-
-            //switchings bits on and off as according to morse code D
-            wait(unit_length);  //wait three unit
-            ledOn();
-            wait(unit_length*3);  //wait three units
-            ledOff();
-            wait(unit_length);  //wait one unit
-            ledOn();
-            wait(unit_length);  //wait one unit
-            ledOff();
-            wait(unit_length);  //wait one unit
-            ledOn();
-            wait(unit_length); //wait one unit
-            ledOff();
-            wait(unit_length*7);  //wait seven units
             }
             cmd_from_android = 0; //exit the case>?
             break;
@@ -220,7 +190,8 @@ int main(void)
        {
 
             if(cmd_from_android == 'R'){
-
+                protocol1();
+                cmd_from_android = 0;
             }
             if(cmd_from_android == 'W') //command from android to exit sleep mode
             {
@@ -228,9 +199,7 @@ int main(void)
                 cmd_from_android = 0;
             }
        }
-
     }
-
 }
 
 //------------------------Timer A0 interrupt-----------------------// controls both LED pwm and voltage data frequency
@@ -449,7 +418,40 @@ void toggleSleepMode(){
     else sleep_mode = 1;
 }
 
+void protocol1(){ //'LD' in morse code
 
+    //switchings bits on and off as according to morse code L
+    ledOn();
+    wait(unit_length);
+    ledOff();
+    wait(unit_length);  //wait one unit
+    ledOn();
+    wait(unit_length*3); //wait three units
+    ledOff();
+    wait(unit_length);//wait one unit
+    ledOn();
+    wait(unit_length); //wait one unit
+    ledOff();
+    wait(unit_length); //wait one unit
+    ledOn();
+    wait(unit_length); //wait one unit
+    ledOff();
+
+    //switchings bits on and off as according to morse code D
+    wait(unit_length);  //wait three unit
+    ledOn();
+    wait(unit_length*3);  //wait three units
+    ledOff();
+    wait(unit_length);  //wait one unit
+    ledOn();
+    wait(unit_length);  //wait one unit
+    ledOff();
+    wait(unit_length);  //wait one unit
+    ledOn();
+    wait(unit_length); //wait one unit
+    ledOff();
+    wait(unit_length*7);  //wait seven units
+}
 
 void strcopy(unsigned char* strParent, unsigned char* strcopy, int length){
     int i;
