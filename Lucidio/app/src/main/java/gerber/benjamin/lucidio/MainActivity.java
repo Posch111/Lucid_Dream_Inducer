@@ -587,11 +587,11 @@ public class MainActivity extends AppCompatActivity {
 
         mHandler.post(new Runnable() {
             @Override
-            public void run() { //second command 3 times to ensure the board receives it
-                for(int i = 0;i<3;i++){
+            public void run() { //second command 5 times to ensure the board receives it
+                for(int i = 0;i<5;i++){
                     bleService.writeMLDP(command);
                     try{
-                        Thread.sleep(50);
+                        Thread.sleep(30);
                     }catch (InterruptedException e) {
                         e.printStackTrace();
                     } {

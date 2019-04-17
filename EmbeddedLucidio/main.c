@@ -78,8 +78,6 @@ void patternDetector(const unsigned char*, int);
 
 int main(void)
 {
-
-
     WDTCTL = WDTPW | WDTHOLD;         // stop watchdog timer
 
     //------------------- Configure pins--------------------------//
@@ -88,7 +86,7 @@ int main(void)
     P1DIR  &=  ~(BIT0 + BIT5);               //P1.0,1.5 set as input
     P1OUT |= BIT4;                          //LED1 always on
     P1OUT &= ~BIT3;
-    P2DIR |= BIT0 + BIT5;                          //BIT0=MLDP
+    P2DIR |= BIT0 + BIT1 + BIT2 + BIT5;                          //BIT0=MLDP
     P2OUT |= BIT5;                   // BIT4=used for uart flow control RTS if enabled on ble chip(might use for MLDP)  BIT5 = SW_WAKE
     //P2DIR &= ~(BIT3);                     //P2.3 set as input (default)
     P2OUT &= ~(BIT0);                   //Set pin 2.0 low (MLDP)
@@ -141,14 +139,14 @@ int main(void)
     //----------------Configure Timer_A1----------------------// for LEDS pwm -- can't make it work
     TA1CCTL1 = OUTMOD_7; // used for pwm to set pin high if counting to CCR0 and reset to low when reaching CCR1
     TA1CCR0 = 100; //period
-    TA1CCR1 = LED_dutycycle; //duty cycle, meaning TA1CCR1 has to be less than or equal to TA1CCR0
+    TA1CCR1 = 0; //duty cycle, meaning TA1CCR1 has to be less than or equal to TA1CCR0
     TA1CTL = TASSEL_2 + MC_1 + ID_3;
     P2SEL |= BIT1 + BIT2;                 //Set up P2.1 and 2.2 for PWM with TA1 (TA1 controls these pins)
 
     //------------------------- Main ----------------------------//
     while(1)
     {
-        wait(300);
+
         /*
          * Using Morse Code standards, 1 unit length = 50ms, but it felt too quick, so if 1e6 clock cycles = 1sec, 100000 cycles = 100ms.
          * The morse code for LD is .-..-.., which is 26 units long (2.6sec).
@@ -168,7 +166,7 @@ int main(void)
          case 'L' : //Decimal:68
              {
               //start tracking SeekBar
-              wait(50);
+              wait(200);
               while(readBuffer[bufferHead-1] != 101){ //Decimal: 101
               ledOn(); //LEDs on to see PWM change in real time
               LED_dutycycle = readBuffer[bufferHead-1]; //receive a cmd_from_android seekBar progress value
@@ -176,6 +174,9 @@ int main(void)
               }
               //stop tracking SeekBars
               //remove later
+              wait(100);
+              LED_dutycycle = readBuffer[bufferHead-1];
+              TA1CCR1 = LED_dutycycle;
               cmd_from_android = 0; //reset cmd_from_android good practices
               ledOff();
               break;
@@ -408,11 +409,11 @@ void wait(long milliseconds){
 }
 
 void ledOn(){
-    P2DIR |= BIT1 + BIT2;
+    TA1CCR1 = LED_dutycycle;
 }
 
 void ledOff(){
-    P2DIR &= ~(BIT1 + BIT2);
+    TA1CCR1 = 0; //turns off pwm light timer
 }
 
 void toggleSleepMode(){

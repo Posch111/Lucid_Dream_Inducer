@@ -69,6 +69,13 @@ public class DevFragment extends Fragment implements View.OnClickListener{
                 activity.bleService.writeMLDP(new byte[] {(byte)101}); //3 times to make sure hardware
                 activity.bleService.writeMLDP(new byte[] {(byte)101}); // leaves the 'L' loop
                 activity.bleService.writeMLDP(new byte[] {(byte)101});
+                try{wait(50);
+                }
+                catch(Exception e){
+                    e.printStackTrace();
+                }
+                activity.bleService.writeMLDP(new byte[] {(byte)ledValue});
+                activity.bleService.writeMLDP(new byte[] {(byte)ledValue});
             }
 
         });

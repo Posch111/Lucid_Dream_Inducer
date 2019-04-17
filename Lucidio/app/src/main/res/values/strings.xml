@@ -45,5 +45,6 @@
     <string name="title_activity_result_view">resultView</string>
     <string name="title_activity_sleep">SleepActivity</string>
     <string name="device_name_error">#device_name</string>
+    <string name="send_command_butt">Send Command</string>
 
 </resources>
