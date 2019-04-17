@@ -27,21 +27,21 @@ unsigned char cmd_from_android = 0;       //variable for receiving BT commands f
  */
 
 //RN4020 commands
-unsigned char SETSETTINGS[] = "SR,32000000\r\n";
-unsigned char GETSETTINGS[] = "GR\r\n";
-unsigned char REBOOT[] = "R,1\r\n";
-unsigned char RESET[] = "SF,2\r\n";
+unsigned char SETSETTINGS[] = "SR,32000000\n";
+unsigned char GETSETTINGS[] = "GR\n";
+unsigned char REBOOT[] = "R,1\n";
+unsigned char RESET[] = "SF,2\n";
 unsigned char ECHO[] = "+\r\n"; //for debugging
-unsigned char REMOTE_COMMAND_ENABLE[] = "!,1\r\n"; //for implementing bluetooth settings setup from phone in the future
-unsigned char REMOTE_COMMAND_DISABLE[] = "!,0\r\n";
-unsigned char SETNAME[] = "S-,Lucidio\r\n";
-unsigned char GETNAME[] = "GN\r\n";
-unsigned char GETFIRMWARE[] = "GDF\r\n";
-unsigned char MLDP[] = "I\r\n"; //Can turn mldp mode on  and off, but it turns on automatically anyways
-unsigned char SETPOWER[] = "SP,7\r\n";
+unsigned char REMOTE_COMMAND_ENABLE[] = "!,1\n"; //for implementing bluetooth settings setup from phone in the future
+unsigned char REMOTE_COMMAND_DISABLE[] = "!,0\n";
+unsigned char SETNAME[] = "S-,Lucidio\n";
+unsigned char GETNAME[] = "GN\n";
+unsigned char GETFIRMWARE[] = "GDF\n";
+unsigned char MLDP[] = "I\n"; //Can turn mldp mode on  and off, but it turns on automatically anyways
+unsigned char SETPOWER[] = "SP,7\n";
 unsigned char GETPOWER[] = "GP\r\n";
 //-----------------Initialize variables----------------------//
-const int BUFFER_MAX_SIZE = 50;
+const int BUFFER_MAX_SIZE = 100;
 unsigned char readBuffer[BUFFER_MAX_SIZE]; //implemented as ring buffer to receive and store UART messages
 unsigned int bufferTail =0; //buffer read index used to keep track of last index value read
 unsigned int bufferHead =0; //used to keep track of the most recent buffer write index.
