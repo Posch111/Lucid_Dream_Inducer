@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.security.ConfirmationAlreadyPresentingException;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
@@ -113,8 +114,10 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
-        activity.findViewById(R.id.sleep_butt).setVisibility(View.INVISIBLE);
-
+        FloatingActionButton fb = activity.findViewById(R.id.sleep_butt);
+        if(fb != null){
+            activity.findViewById(R.id.sleep_butt).setVisibility(View.INVISIBLE);
+        }
 
         mTimer = new Runnable() {
             @Override
@@ -141,6 +144,10 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onPause() {
         mHandler.removeCallbacks(mTimer);
+        FloatingActionButton fb = activity.findViewById(R.id.sleep_butt);
+        if(fb != null){
+            activity.findViewById(R.id.sleep_butt).setVisibility(View.VISIBLE);
+        }
         super.onPause();
     }
 

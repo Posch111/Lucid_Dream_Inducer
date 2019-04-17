@@ -27,7 +27,7 @@ unsigned char cmd_from_android = 0;       //variable for receiving BT commands f
  */
 
 //RN4020 commands
-unsigned char SETSETTINGS[] = "SR,32000000\n";
+unsigned char SETSETTINGS[] = "SR,32000400\n";
 unsigned char GETSETTINGS[] = "GR\n";
 unsigned char REBOOT[] = "R,1\n";
 unsigned char RESET[] = "SF,2\n";
