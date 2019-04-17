@@ -1,6 +1,7 @@
 package gerber.benjamin.lucidio;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,12 +13,17 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.ToggleButton;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class DevFragment extends Fragment implements View.OnClickListener{
 
     private int ledValue= 50;
     private int tapCount;
     private MainActivity activity;
     private EditText commandText;
+    boolean selectingLED = false;
+    Handler mHandler = new Handler();
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
@@ -25,7 +31,7 @@ public class DevFragment extends Fragment implements View.OnClickListener{
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_dev, container, false);
         commandText = v.findViewById(R.id.text_comand);
-        Button sendTextButton = v.findViewById(R.id.button_send_command);
+        final Button sendTextButton = v.findViewById(R.id.button_send_command);
         //LED Seekbar
         SeekBar seekBar = v.findViewById(R.id.led_seek);
         seekBar.setMax(50);
@@ -34,26 +40,37 @@ public class DevFragment extends Fragment implements View.OnClickListener{
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 ledValue = progress;
-                if(((char)progress)=='D'){
+                if(((char)progress)=='D'){ //prevents the embedded code from wasting time attempting to process a command
                     return;
                 }
-                byte[] data = new byte[]{(byte) ledValue};
+                if(!selectingLED){
+                    selectingLED = true;
+                    mHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            byte[] data = {(byte)ledValue};
+                            activity.bleService.writeMLDP(data);
+                            selectingLED = false;
+                        }
+                    },200);
+                }
 
-                activity.bleService.writeMLDP(data);
                 Log.i("led brightness", String.valueOf(ledValue));
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                activity.sendBLECmd('L');
+                activity.sendBLECmdOnce('L');
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+
                 activity.bleService.writeMLDP(new byte[] {(byte)101}); //3 times to make sure hardware
                 activity.bleService.writeMLDP(new byte[] {(byte)101}); // leaves the 'L' loop
                 activity.bleService.writeMLDP(new byte[] {(byte)101});
             }
+
         });
 
         //Initializing buttons
@@ -154,6 +171,8 @@ public class DevFragment extends Fragment implements View.OnClickListener{
             public void onClick(View v) {
                 tapCount++;
                 if(tapCount > 2) {
+                    sendTextButton.setVisibility(View.VISIBLE);
+                    commandText.setVisibility(View.VISIBLE);
                     button3.setVisibility(View.VISIBLE);
                     button4.setVisibility(View.VISIBLE);
                     button5.setVisibility(View.VISIBLE);
@@ -187,17 +206,6 @@ public class DevFragment extends Fragment implements View.OnClickListener{
                 activity.sendBLECmd(BleCmds.WAKE);
                 BLEService.sleeping = false;
                 break;
-//
-//            case (R.id.set_led_butt):
-//                MainActivity.settingsBytes[3] = (byte) ledValue;                   //LED Value 0-100
-//                activity.applyBrightness();
-//                data = new byte[]{(byte) ledValue};
-//                Log.i("ledvalue",String.valueOf(ledValue));
-//                try{
-//                    Thread.sleep(200);
-//                    activity.bleService.writeData(data);
-//                }catch (Exception e){return;}
-//                break;
 
             case (R.id.start_rem_butt):                //Button to kick us into REM sleep
                 activity.sendBLECmd(BleCmds.REMNOTIFIER);

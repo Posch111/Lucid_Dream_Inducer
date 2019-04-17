@@ -12,7 +12,8 @@
  */
 
 //Phone Commands
-char commandPattern[] = "LUCID";  //if this sequence of characters is received, next char will be read as android command (in RX interrupt)
+const unsigned char commandPattern[] = "LD";  //if this sequence of characters is received, next char will be read as android command (in RX interrupt)
+const unsigned int commandPatternSize = sizeof(commandPattern) - 1;
 int commandNotification =0;
 int commandPending = 0;
 unsigned char cmd_from_android = 0;       //variable for receiving BT commands from Android device
@@ -73,10 +74,11 @@ void ledOn();
 void ledOff();
 void toggleSleepMode();
 void protocol1();
-void patternDetector(unsigned char*, int);
+void patternDetector(const unsigned char*, int);
 
 int main(void)
 {
+
 
     WDTCTL = WDTPW | WDTHOLD;         // stop watchdog timer
 
@@ -93,7 +95,8 @@ int main(void)
     ledOff();
 
     //------------------- Configure the Clocks -------------------//
-    BCSCTL1 = CALBC1_1MHZ;             // Set range
+    BCSCTL1 = CALBC1_1MHZ;
+    BCSCTL3 = LFXT1S_2;
     DCOCTL  = CALDCO_1MHZ;             // Set DCO step + modulation
 
     //------------ Configuring the UART(USCI_A0) -----------------//
@@ -131,9 +134,9 @@ int main(void)
 //    sendUartCmd(GETNAME, sizeof(GETNAME));
 
     //----------------Configure Timer_B0----------------------//
-    TA0CTL |= TASSEL_2 + ID_3 + MC_1;
+    TA0CTL |= TASSEL_1 + ID_3 + MC_1;  //sourced from ACLK (12kHz clock) and divide by 8 (1500 Hz)
     TA0CCTL0 = CCIE;
-    TA0CCR0 = 833;                    //    (1,000,000 clock cycles) / ( 8 (clock divider setting) *150samples/sec) = 833 cycles/sample
+    TA0CCR0 = 10;                    //    (1500 clock cycles) / (150samples/sec) = 10 cycles/sample
 
     //----------------Configure Timer_A1----------------------// for LEDS pwm -- can't make it work
     TA1CCTL1 = OUTMOD_7; // used for pwm to set pin high if counting to CCR0 and reset to low when reaching CCR1
@@ -145,6 +148,7 @@ int main(void)
     //------------------------- Main ----------------------------//
     while(1)
     {
+        wait(300);
         /*
          * Using Morse Code standards, 1 unit length = 50ms, but it felt too quick, so if 1e6 clock cycles = 1sec, 100000 cycles = 100ms.
          * The morse code for LD is .-..-.., which is 26 units long (2.6sec).
@@ -156,7 +160,7 @@ int main(void)
             //P2DIR |= BIT1;   //lights on
             unsigned int i; //for loop value
             for(i=1; i>0; i-- ){
-
+                protocol1();
             }
             cmd_from_android = 0; //exit the case>?
             break;
@@ -238,21 +242,21 @@ __interrupt void ReceiveInterrupt(void)
         commandNotification = 0;
     }
 
-    if(data == 'D'){
-        patternDetector("LUCID", 5);
+    if(data == commandPattern[commandPatternSize-1]){
+        patternDetector(commandPattern, commandPatternSize);
     }
 
 }
 
-void patternDetector(unsigned char *pattern, int length){
-    int readIndex;
+void patternDetector(const unsigned char *pattern, int length){
+    unsigned int readIndex;
     if(bufferHead < length){
         readIndex = bufferHead - length + 50;
     }
     else{
         readIndex = bufferHead - length;
     }
-    int i;
+    unsigned int i;
     for(i=0;i<length;i++){
         if(readBuffer[readIndex] != commandPattern[i]){
             commandNotification = 0;

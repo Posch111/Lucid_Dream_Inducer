@@ -27,12 +27,13 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class SleepFragment extends Fragment implements View.OnClickListener {
-
+    private int graphIndex = 0;
     private final Handler mHandler = new Handler();
     private Runnable mTimer;
     private LineGraphSeries<DataPoint> mSeries;
     private MainActivity activity;
     private BLEService bleService;
+    private boolean protocolStarted = false;
     Timer timer = new Timer();
     Calendar calendar;
 
@@ -67,13 +68,6 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
         calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 3);
         calendar.set(Calendar.MINUTE,0);
-        timer.scheduleAtFixedRate( //Timer starts protocol every 30 minutes from 3am on.
-                new TimerTask() {
-                    @Override
-                    public void run() {
-                        activity.sendBLECmd('R'); //send rem cycle detection command
-                    }
-                }, calendar.getTime(),1800000);
 
         //Initialize data streaming
         BLEService.sleeping = true;
@@ -96,22 +90,23 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
         });
 
         graph.getGridLabelRenderer().setNumHorizontalLabels(4);
+        graph.getGridLabelRenderer().setHorizontalAxisTitle("EOG Signal");
+        graph.getGridLabelRenderer().setHorizontalLabelsVisible(false);
 
         // set manual X bounds
         graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setMinX(0);
-        graph.getViewport().setMaxX(1920);
+        graph.getViewport().setMaxX(100);
 
         // set manual Y bounds
         graph.getViewport().setYAxisBoundsManual(true);
-        graph.getViewport().setMinY(-250);
-        graph.getViewport().setMaxY(250);
+        graph.getViewport().setMinY(-150);
+        graph.getViewport().setMaxY(150);
         graph.getViewport().setScalable(true);
         //Buttons
         final Button button = v.findViewById(R.id.end_sleep_butt);
         button.setOnClickListener(this);
 
-        //activity.resetEOGData();
         return v;
     }
 
@@ -119,26 +114,28 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
     public void onResume() {
         super.onResume();
         activity.findViewById(R.id.sleep_butt).setVisibility(View.INVISIBLE);
-        if (activity.mEogData.size() == 0) {
-            activity.mEogData.add(0);
-            activity.mEogDataTime.add((long) 0);
-        }
+
 
         mTimer = new Runnable() {
             @Override
             public void run() {
-                mSeries.appendData(new DataPoint(activity.mEogDataTime.get(
-                        activity.mEogDataTime.size() - 1),
-                        activity.mEogData.get(
-                                activity.mEogData.size() - 1)), true, 1920);
+                if (activity.mEogData.size()>0) {
+                    mSeries.appendData(new DataPoint(graphIndex,
+                            activity.mEogData.get(
+                                    activity.mEogData.size() - 1)), true, 500);
+
+                }
+                graphIndex++;
+                if(graphIndex > 500){
+                    mSeries.resetData(new DataPoint[] {new DataPoint(0,0)});
+                    graphIndex = 0;
+                }
                 mHandler.postDelayed(this, 100);
             }
         };
         mHandler.postDelayed(mTimer, 1000);
 
         new Thread(new dataSaveRunnable()).start();
-        //new Thread(new dataReceiveRunnable()).start();
-        //new Thread(new cmdRunnable()).start();
     }
 
     @Override
@@ -172,10 +169,15 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
         @RequiresApi(api = Build.VERSION_CODES.N)
         public void run() {
             while (BLEService.sleeping) {
-                if(Calendar.getInstance().get(Calendar.HOUR_OF_DAY) >= 7){ //if time is before 7am
-                    timer.cancel();
+                int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+                if(!protocolStarted && (hour <= 7) && (hour >=3)){ //if time is before 7am
+                    timer.scheduleAtFixedRate(new TimerTask() {
+                        @Override
+                        public void run() {
+                            activity.sendBLECmdOnce('R');
+                        }
+                    },0,1800000); //every 1800000 ms (30 min)
                 }
-
 
                 try {
                     Thread.sleep(10000);

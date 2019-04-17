@@ -38,6 +38,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.DateFormat;
@@ -51,6 +52,8 @@ import java.util.Locale;
 import gerber.benjamin.lucidio.BLEService.BluetoothLeBinder;
 
 public class MainActivity extends AppCompatActivity {
+
+    private String androidCmdIndicator = "LD";
 
     //Fragment Objects
     private SettingFragment settingFragment;
@@ -85,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
     public static Date currentLocalTime = calendar.getTime();
     public static final DateFormat timeFormatter = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault());
     public static final DateFormat dateFormatter = DateFormat.getDateInstance(DateFormat.SHORT, Locale.getDefault());
+    File eogFile;
 
     //Alarm Objects
     public static AlarmManager alarmMgr;
@@ -102,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     public static boolean extReadOnly;
     public static FileInputStream inputStream;
     public static FileOutputStream outputStream;
-    public static int eogLastWriteIndex = 0;
+    public static int eogNextWriteIndex = 0;
 
     //Misc Objects
     public final String[] PERMISSIONS = {Manifest.permission.ACCESS_COARSE_LOCATION,
@@ -462,31 +466,42 @@ public class MainActivity extends AppCompatActivity {
 
     //Saves EOG Data and timestamp
     public boolean saveEogData() {
-
+        boolean datestamp = false;
         String dateStamp = dateFormatter.format(currentLocalTime);
         String filename = "/Sleep_data_" + dateStamp.replace("/", "_") + ".csv";  //Datestamped Filename
-        File eogFolder = getFullDir();
-        String path = eogFolder.getAbsolutePath(); //Get file path
+        File path = getFullDir(); //Get file path
         Log.i("STORAGE", path + filename);
         //Uses OutputStreamWriter to print a csv format data set of type <timestamp>,<data>
+        //File eogDataFileTemp = new File(path.getAbsolutePath());
 
+        if(eogNextWriteIndex>=9000){
+            eogNextWriteIndex=0;
+        }
+
+        //if(!eogDataFileTemp.exists()){
             try {
                 OutputStreamWriter outputStreamWriter =
-                        new OutputStreamWriter(new FileOutputStream(new File(path, filename)));
+                        new OutputStreamWriter(new FileOutputStream(new File(path, filename),true));
                 for (int i = 0; i < mEogData.size(); i++) {
                     String streamLine;
-                    streamLine = mEogData.get(i) + "\n";
-                    //Log.i("STORAGE", streamLine + "iteration:" + String.valueOf(i));
-                    outputStreamWriter.write(streamLine);
-                    eogLastWriteIndex++;
+                    streamLine =  +mEogData.get(i) + "\n";
+                    if(eogNextWriteIndex == 0){
+                        streamLine = mEogData.get(i) + "," + timeFormatter.format(Calendar.getInstance().getTime()) + "\n";
+                        outputStreamWriter.write(streamLine);
+                    }
+                    else{
+                        outputStreamWriter.write(streamLine);
+                    }
+                    eogNextWriteIndex++;
                 }
+                outputStreamWriter.flush();
                 outputStreamWriter.close();
+                mEogData.clear();
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.i("STORAGE", "EOG data not successfully saved");
                 return false;
             }
-
         Log.i("STORAGE", "EOG data saved");
         return true;
     }
@@ -494,20 +509,14 @@ public class MainActivity extends AppCompatActivity {
     /* Checks if external storage is available for read and write */
     public boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            return true;
-        }
-        return false;
+        return Environment.MEDIA_MOUNTED.equals(state);
     }
 
     /* Checks if external storage is available to at least read */
     public boolean isExternalStorageReadable() {
         String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state) ||
-                Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
-            return true;
-        }
-        return false;
+        return Environment.MEDIA_MOUNTED.equals(state) ||
+                Environment.MEDIA_MOUNTED_READ_ONLY.equals(state);
     }
 
     public File getFullDir() {
@@ -566,7 +575,7 @@ public class MainActivity extends AppCompatActivity {
 
     static public int toDigit(char hexChar) {
         int digit = Character.digit(hexChar, 16);
-        if (digit == -1) {
+            if (digit == -1) {
             throw new IllegalArgumentException(
                     "Invalid Hexadecimal Character: " + hexChar);
         }
@@ -574,7 +583,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void sendBLECmd(char cmd) {
-        final String command = "LUCID" + cmd;
+        final String command = androidCmdIndicator + cmd;
 
         mHandler.post(new Runnable() {
             @Override
@@ -593,7 +602,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     public void sendBLECmd(String cmd) {  //TODO board isn't set up for multi-char commands yet;
-        final String command = "LUCID" + cmd;
+        final String command = androidCmdIndicator + cmd;
         mHandler.post(new Runnable() {
             @Override
             public void run() { //second command 3 times to ensure the board receives it
@@ -610,11 +619,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-    public void resetEOGData(){
-        eogLastWriteIndex = 0;
-        mEogData.clear();
-        mEogDataTime.clear();
+    public void sendBLECmdOnce(char cmd) {
+        /* The normal sendBLECmd sends it 3 times to ensure reliablity. This sends only once
+        /* for the case of sending the protocol (so it does not do the protocol multiple times back to back)
+         */
+        final String command = androidCmdIndicator + cmd;
+        bleService.writeMLDP(command);
     }
-
 }
