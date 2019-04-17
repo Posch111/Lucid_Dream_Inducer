@@ -30,7 +30,7 @@ unsigned char cmd_from_android = 0;       //variable for receiving BT commands f
 unsigned char SETSETTINGS[] = "SR,32000000\r\n";
 unsigned char GETSETTINGS[] = "GR\r\n";
 unsigned char REBOOT[] = "R,1\r\n";
-unsigned char RESET[] = "SF,1\r\n";
+unsigned char RESET[] = "SF,2\r\n";
 unsigned char ECHO[] = "+\r\n"; //for debugging
 unsigned char REMOTE_COMMAND_ENABLE[] = "!,1\r\n"; //for implementing bluetooth settings setup from phone in the future
 unsigned char REMOTE_COMMAND_DISABLE[] = "!,0\r\n";
@@ -38,7 +38,8 @@ unsigned char SETNAME[] = "S-,Lucidio\r\n";
 unsigned char GETNAME[] = "GN\r\n";
 unsigned char GETFIRMWARE[] = "GDF\r\n";
 unsigned char MLDP[] = "I\r\n"; //Can turn mldp mode on  and off, but it turns on automatically anyways
-
+unsigned char SETPOWER[] = "SP,7\r\n";
+unsigned char GETPOWER[] = "GP\r\n";
 //-----------------Initialize variables----------------------//
 const int BUFFER_MAX_SIZE = 50;
 unsigned char readBuffer[BUFFER_MAX_SIZE]; //implemented as ring buffer to receive and store UART messages
@@ -62,7 +63,7 @@ void sendUartCmd(unsigned char[], int);
 void write_ReadBuffer(unsigned char); //write to the read buffer array, readBuffer[] (UART)
 void read_ReadBuffer(); //updates lastRead[] to the new values read over UART
 void clear_ReadBuffer(); //set buffer values to null
-void factoryResetBluetooth();
+void factoryResetBLE();
 int BLEReadyForData();
 int responseAOK();
 void rebootBLE();
@@ -79,18 +80,6 @@ void patternDetector(const unsigned char*, int);
 int main(void)
 {
     WDTCTL = WDTPW | WDTHOLD;         // stop watchdog timer
-
-    //------------------- Configure pins--------------------------//
-
-    P1DIR  |=  BIT3 + BIT4 + BIT6;           //P1.3,1.4,1.6 set as outputs (LED1,LED2,WAKE_SW)
-    P1DIR  &=  ~(BIT0 + BIT5);               //P1.0,1.5 set as input
-    P1OUT |= BIT4;                          //LED1 always on
-    P1OUT &= ~BIT3;
-    P2DIR |= BIT0 + BIT1 + BIT2 + BIT5;                          //BIT0=MLDP
-    P2OUT |= BIT5;                   // BIT4=used for uart flow control RTS if enabled on ble chip(might use for MLDP)  BIT5 = SW_WAKE
-    //P2DIR &= ~(BIT3);                     //P2.3 set as input (default)
-    P2OUT &= ~(BIT0);                   //Set pin 2.0 low (MLDP)
-    ledOff();
 
     //------------------- Configure the Clocks -------------------//
     BCSCTL1 = CALBC1_1MHZ;
@@ -113,25 +102,7 @@ int main(void)
     ADC10CTL1 = INCH_0 + SHS_0 + ADC10DIV_0 + ADC10SSEL_0 + CONSEQ_1;
     ADC10AE0 |= BIT0; //analog input enabled A0 at pin1.0
 
-    //---------------- Enabling the interrupts ------------------//
-
-    IE2 |= UCA0RXIE;                 // Enable uart RX interrupt
-    __enable_interrupt();           // Enable the global interrupt
-
-//    //---------------- Commands to Set Up Bluetooth ------------------//
-//    wakeBLE();            // SW_WAKE (wakes RN4020)
-//    wait(500);
-//    sendUartCmd(RESET, sizeof(RESET));
-//    wait(100);
-    //sendUartCmd(SETSETTINGS, sizeof(SETSETTINGS)); //RN4020 freeezes and needs a manual power cycle to work again (followed by commenting out this code)
-//    wait(100);
-//    sendUartCmd(SETNAME, sizeof(SETNAME));
-   // rebootBLE(); //reboot after changing a setting
-//
-   // sendUartCmd(GETSETTINGS, sizeof(GETSETTINGS)); //RN4020 sends back the current SR command settings
-//    sendUartCmd(GETNAME, sizeof(GETNAME));
-
-    //----------------Configure Timer_B0----------------------//
+    //----------------Configure Timer_A0----------------------//
     TA0CTL |= TASSEL_1 + ID_3 + MC_1;  //sourced from ACLK (12kHz clock) and divide by 8 (1500 Hz)
     TA0CCTL0 = CCIE;
     TA0CCR0 = 10;                    //    (1500 clock cycles) / (150samples/sec) = 10 cycles/sample
@@ -142,6 +113,34 @@ int main(void)
     TA1CCR1 = 0; //duty cycle, meaning TA1CCR1 has to be less than or equal to TA1CCR0
     TA1CTL = TASSEL_2 + MC_1 + ID_3;
     P2SEL |= BIT1 + BIT2;                 //Set up P2.1 and 2.2 for PWM with TA1 (TA1 controls these pins)
+
+    //------------------- Configure pins--------------------------//
+
+    P1DIR  |=  BIT3 + BIT4 + BIT6;           //P1.3,1.4,1.6 set as outputs (LED1,LED2,WAKE_SW)
+    P1DIR  &=  ~(BIT0 + BIT5);               //P1.0,1.5 set as input
+    P1OUT |= BIT4;                          //LED1 always on
+    P1OUT &= ~BIT3;
+    P2DIR |= BIT0 + BIT1 + BIT2 + BIT5;                          //BIT0=MLDP
+   // P2OUT |= BIT0;                   // BIT4=used for uart flow control RTS if enabled on ble chip(might use for MLDP)  BIT5 = HW_WAKE
+    //P2DIR &= ~(BIT3);                     //P2.3 set as input (default)
+    P2OUT &= ~(BIT0);                   //Set pin 2.0 low (MLDP)
+    ledOff();
+
+    //---------------- Enabling the interrupts ------------------//
+
+    IE2 |= UCA0RXIE;                 // Enable uart RX interrupt
+    __enable_interrupt();           // Enable the global interrupt
+
+    //---------------- Commands to Set Up Bluetooth ------------------//
+    factoryResetBLE();
+    sendUartCmd(SETSETTINGS, sizeof(SETSETTINGS)); //RN4020 freeezes and needs a manual power cycle to work again (followed by commenting out this code)
+    sendUartCmd(SETNAME, sizeof(SETNAME));
+    sendUartCmd(SETPOWER, sizeof(SETPOWER));
+    rebootBLE(); //reboot after changing a setting
+//    sendUartCmd(GETSETTINGS, sizeof(GETSETTINGS)); //RN4020 sends back the current SR command settings
+//    sendUartCmd(GETNAME, sizeof(GETNAME));
+//    sendUartCmd(GETPOWER, sizeof(GETPOWER));
+
 
     //------------------------- Main ----------------------------//
     while(1)
@@ -290,18 +289,8 @@ void sendUartCmd(unsigned char string[], int length){
     }
 }
 
-void factoryResetBluetooth(){
-    sendUartCmd(RESET, sizeof(RESET));
-    wait(100);
-    //clear_ReadBuffer();
-    //wakeBLE();
-//    int i;                        //can't get hardware reset to work, using reset command instead
-//    for(i = 10; i != 0; i--){
-//        P2OUT &= ~BIT5;
-//        wait(200);
-//        P2OUT |= BIT5;
-//    }
-    P2OUT &= ~BIT5;
+void factoryResetBLE(){
+    P2OUT |= BIT5;
     P1OUT &= ~BIT6;
     wait(5);
     P1OUT |= BIT6;
@@ -324,8 +313,8 @@ void factoryResetBluetooth(){
     wait(5);
     P2OUT |= BIT5;
     wait(5);
-
-//    sendUartCmd(REBOOT, sizeof(REBOOT));
+    sendUartCmd(RESET, sizeof(RESET));
+    wait(2000);
     read_ReadBuffer();
 }
 
@@ -392,6 +381,7 @@ int responseAOK(){
 
 void rebootBLE(){
     sendUartCmd(REBOOT, sizeof(REBOOT));
+    wait(2000);
 }
 
 void wakeBLE(){
