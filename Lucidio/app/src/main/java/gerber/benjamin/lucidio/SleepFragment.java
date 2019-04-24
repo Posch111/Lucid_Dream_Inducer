@@ -1,14 +1,11 @@
 package gerber.benjamin.lucidio;
 
-import android.icu.text.SimpleDateFormat;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.security.ConfirmationAlreadyPresentingException;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,9 +17,7 @@ import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
-import java.time.Instant;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -171,6 +166,7 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
             while (BLEService.sleeping) {
                 int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
                 if(!protocolStarted && (hour <= 7) && (hour >=3)){ //if time is before 7am
+                    protocolStarted = true;
                     timer.scheduleAtFixedRate(new TimerTask() {
                         @Override
                         public void run() {
