@@ -34,7 +34,7 @@ unsigned char RESET[] = "SF,2\n";
 unsigned char ECHO[] = "+\r\n"; //for debugging
 unsigned char REMOTE_COMMAND_ENABLE[] = "!,1\n"; //for implementing bluetooth settings setup from phone in the future
 unsigned char REMOTE_COMMAND_DISABLE[] = "!,0\n";
-unsigned char SETNAME[] = "S-,Lucidio\n";
+unsigned char SETNAME[] = "SN,Lucidio\n";
 unsigned char GETNAME[] = "GN\n";
 unsigned char GETFIRMWARE[] = "GDF\n";
 unsigned char MLDP[] = "I\n"; //Can turn mldp mode on  and off, but it turns on automatically anyways
@@ -135,7 +135,7 @@ int main(void)
     factoryResetBLE();
     sendUartCmd(SETSETTINGS, sizeof(SETSETTINGS)); //RN4020 freeezes and needs a manual power cycle to work again (followed by commenting out this code)
     sendUartCmd(SETNAME, sizeof(SETNAME));
-    sendUartCmd(SETPOWER, sizeof(SETPOWER));
+    //sendUartCmd(SETPOWER, sizeof(SETPOWER));
     rebootBLE(); //reboot after changing a setting
 //    sendUartCmd(GETSETTINGS, sizeof(GETSETTINGS)); //RN4020 sends back the current SR command settings
 //    sendUartCmd(GETNAME, sizeof(GETNAME));

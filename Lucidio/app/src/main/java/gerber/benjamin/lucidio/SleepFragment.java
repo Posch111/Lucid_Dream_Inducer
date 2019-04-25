@@ -159,6 +159,7 @@ public class SleepFragment extends Fragment implements View.OnClickListener {
                 transaction.commit(); // commit the changes
                 Toast.makeText(activity, "Good Morning", Toast.LENGTH_SHORT).show();
                 activity.findViewById(R.id.sleep_butt).setVisibility(View.VISIBLE);
+                protocolStarted = false;
                 break;
         }
     }
