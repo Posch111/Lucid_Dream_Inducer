@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
     //Data Objects
     public ArrayList<Long> mEogDataTime = new ArrayList<>();
-    public ArrayList<Integer> mEogData = new ArrayList<>();
+    public ArrayList<Byte> mEogData = new ArrayList<>();
     public static Calendar calendar = Calendar.getInstance();
     public static Date currentLocalTime = calendar.getTime();
     public static final DateFormat timeFormatter = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault());
@@ -306,7 +306,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         if (BLEService.sleeping) {
                             for (byte aData : data) {
-                                mEogData.add((int) aData);
+                                mEogData.add((byte)(aData + 128));
                                 mEogDataTime.add((long) mEogDataTime.size());
                             }
                         }
